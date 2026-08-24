@@ -30,11 +30,38 @@ Everything runs in the tab. Your photos never leave the machine.
 1. Drop your photos anywhere on the page, or click **+ Import**.
 2. The first layer stays Normal, the ones above switch to **Lighten**. The ⚡ button forces every
    layer above the base into that mode.
-3. Align the layers: drag the image on the canvas, pull a **corner handle** to scale, or type exact
-   values in the panel.
-4. **Erase** removes an area of the active layer, a stray bolt or a reflection. **Restore** brings it
-   back. Hardness and flow shape the brush edge.
-5. **Export PNG**.
+3. Hit **Auto align**. Handheld bursts drift a few pixels between frames, this puts them back on top
+   of each other.
+4. Adjust: drag the image on the canvas, pull a **corner handle** to scale, or type exact values in
+   the panel.
+5. **Erase** removes an area of the active layer, a stray bolt or a reflection. **Restore** brings it
+   back. Or let **Auto mask** hide everything below a luminance, which isolates the bolt without
+   painting anything.
+6. **Export**.
+
+### Auto align
+
+Registers every layer against the bottom one by image content. It works on a gradient pyramid, so
+exposure differences and the bolts themselves, present in one frame only, do not throw it off. The
+match is refined below the pixel and lands exact on a clean burst. Locked layers are left alone.
+
+### Auto mask
+
+A per layer luminance threshold that hides everything darker than the cut, with a soft edge. On a
+night sky it isolates the bolt in one slider move. Painting with the brush afterwards takes over,
+and the threshold resets to zero to say so.
+
+### Projects
+
+Name a project and press **Save**. It goes into the browser: the index in localStorage, the images
+in IndexedDB. From then on it keeps itself up to date as you work, and reopens on its own the next
+time you come back. **New** starts a fresh one, **Open** lists what you have saved.
+
+Nothing is saved before you name and save it once, so an experiment never leaves a trace behind.
+
+### Compare
+
+Hold the ◑ button, or the `\` key, to see the base layer alone. Release to get the stack back.
 
 ### Snapping
 
@@ -49,8 +76,19 @@ Useful when the frames do not all come from the same body or the same crop.
 
 ### Fine control
 
-Opacity, scale, X and Y each have a slider, a direct input field and fine steps. X and Y move one
-pixel at a time with `+1` / `-1`, ten with `+10` / `-10`, and with the arrow keys.
+Opacity, scale, X, Y and the auto mask threshold each have a slider, a direct input field and fine
+steps. X and Y move one pixel at a time with `+1` / `-1`, ten with `+10` / `-10`, and with the arrow
+keys.
+
+Layers can be locked, which freezes them against dragging, handles, arrows and auto align, and
+duplicated, which copies the transform and the mask.
+
+### Export
+
+PNG, JPEG or WebP, with a quality slider for the lossy ones. Two sizes: the working document, or
+full resolution, which re-decodes the original files and recomposes at their real pixel size. Full
+resolution needs those files, so it is unavailable for layers reopened from a saved project, which
+only keep their working copy.
 
 ## Languages
 
@@ -66,6 +104,8 @@ one entry.
 | `E` | Erase |
 | `R` | Restore |
 | `S` | Toggle snapping |
+| `\` (held) | Compare with the base layer |
+| `Tab` | Canvas only |
 | `Alt` (held) | Suspend snapping |
 | `[` `]` | Brush size |
 | Arrows | Move layer by 1 px (10 px with `Shift`) |
@@ -84,6 +124,7 @@ margins that respect display cutouts.
 - One finger: active tool.
 - Two fingers: zoom and pan.
 - Tapping outside the layer panel closes it.
+- `Tab`, or the ⛶ button, hides both panels and leaves the canvas alone.
 
 On iOS, `Share → Add to Home Screen` installs it fullscreen. On export the PNG opens in a tab:
 `Share → Save to Photos`.
@@ -99,6 +140,11 @@ and says so.
 Working resolution is capped to fit in canvas memory, which is tight on iOS. The **Working** setting
 runs from 2048 px to full resolution and applies to subsequent imports. If export fails for lack of
 memory, lower it.
+
+## Storage
+
+Projects live in your browser, never on a server. Clearing site data removes them. Export the PNG
+for anything you want to keep.
 
 ## Running locally
 

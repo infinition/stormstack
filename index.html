@@ -171,6 +171,51 @@ aside{overscroll-behavior:contain}
   header{height:40px}
 }
 @media (prefers-reduced-motion:reduce){aside{transition:none}}
+
+/* Densite du panneau : en tactile le libelle et le reglage fin doivent
+   tenir sur une seule ligne, sinon chaque propriete mange 150 px. */
+@media (pointer:coarse){
+  .stp{width:32px;height:32px;font-size:12px}
+  .stp.wide{width:34px;font-size:10px}
+  .num{height:32px;width:56px;font-size:11px}
+  .lbody{padding:2px 6px 8px}
+  .prop{margin:6px 0}
+}
+
+/* Projet */
+.pname{flex:1;min-width:0;height:28px;background:var(--field);border:1px solid var(--line);
+       border-radius:3px;padding:0 7px;font-size:11px;color:var(--txt)}
+.pname:focus{border-color:var(--bolt);outline:none}
+.prow{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:6px 0 2px}
+.prow button{padding:6px 4px;font-size:10px;letter-spacing:0}
+.saved{color:var(--dim);font-size:10px;margin-top:4px;min-height:13px}
+
+/* Boites de dialogue */
+.dlg{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
+     background:rgba(4,7,9,.72);padding:16px;padding-top:calc(16px + env(safe-area-inset-top));
+     padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.dlg.open{display:flex}
+.dlgbox{background:var(--panel);border:1px solid var(--line);border-radius:6px;width:min(440px,100%);
+        max-height:100%;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.dlghead{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.dlghead h3{flex:1;font-size:11px;letter-spacing:.16em;color:var(--bolt-hot);font-weight:400}
+.dlgbody{padding:12px;overflow-y:auto;overscroll-behavior:contain}
+.dlgfoot{display:flex;gap:6px;justify-content:flex-end;padding:10px 12px;border-top:1px solid var(--line)}
+.plist{display:flex;flex-direction:column;gap:4px}
+.pitem{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);
+       border-radius:4px;background:var(--panel2);cursor:pointer}
+.pitem:hover{border-color:var(--bolt)}
+.pitem .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.pitem .dt{color:var(--dim);font-size:10px;flex:none}
+.dlgrow{display:flex;align-items:center;gap:8px;margin:8px 0}
+.dlgrow label{color:var(--dim);font-size:11px;min-width:96px}
+.dlgnote{color:var(--dim);font-size:10px;line-height:1.6;margin-top:10px}
+
+/* Plein ecran : le canevas seul */
+body.solo aside,body.solo #tools{display:none}
+body.solo #app{grid-template-columns:1fr}
+.icn.lock.on{color:var(--bolt)}
+.layer.lock .lhead{cursor:default}
 </style>
 </head>
 <body>
@@ -185,6 +230,10 @@ aside{overscroll-behavior:contain}
       <button id="btnUndo" class="hbtn" data-i18n-title="ui.undo" disabled>↶</button>
       <button id="btnRedo" class="hbtn" data-i18n-title="ui.redo" disabled>↷</button>
     </span>
+    <span class="hgrp">
+      <button id="btnCompare" class="hbtn" data-i18n-title="ui.compareTitle">◑</button>
+      <button id="btnSolo" class="hbtn" data-i18n-title="ui.soloTitle">⛶</button>
+    </span>
     <div class="spacer"></div>
     <span class="hint" data-i18n="ui.hint">V move · E erase · R restore · [ ] size · Ctrl+Z</span>
     <span class="hgrp lang" role="group" data-i18n-label="ui.language">
@@ -195,6 +244,16 @@ aside{overscroll-behavior:contain}
   </header>
 
   <aside id="panel">
+    <div class="sec">
+      <h3 data-i18n="ui.project">PROJECT</h3>
+      <div class="row"><input id="pname" class="pname" type="text" maxlength="60" data-i18n-ph="ui.projectName"></div>
+      <div class="prow">
+        <button id="pNew" data-i18n="ui.newProject" data-i18n-title="ui.newProjectTitle">New</button>
+        <button id="pSave" data-i18n="ui.saveProject" data-i18n-title="ui.saveProjectTitle">Save</button>
+        <button id="pOpen" data-i18n="ui.openProject" data-i18n-title="ui.openProjectTitle">Open</button>
+      </div>
+      <div id="pSaved" class="saved"></div>
+    </div>
     <div class="sec">
       <h3 data-i18n="ui.composition">COMPOSITION</h3>
       <div class="row"><label data-i18n="ui.background">Background</label><select id="bg">
@@ -240,6 +299,8 @@ aside{overscroll-behavior:contain}
       <button id="btnMaskAll" data-i18n="ui.maskAll" data-i18n-title="ui.maskAllTitle">Mask all</button>
       <button id="btnMaskClear" data-i18n="ui.maskClear">Clear mask</button>
       <div class="sep"></div>
+      <button id="btnAlign" data-i18n="ui.align" data-i18n-title="ui.alignTitle">Auto align</button>
+      <div class="sep"></div>
       <button id="btnSnap" class="on" data-i18n="ui.snap" data-i18n-title="ui.snapTitle">Snap</button>
       <div class="sep"></div>
       <button id="btnFit" data-i18n="ui.fitView">Fit</button>
@@ -257,6 +318,39 @@ aside{overscroll-behavior:contain}
       </div>
     </div>
   </main>
+</div>
+
+<div class="dlg" id="dlgOpen">
+  <div class="dlgbox">
+    <div class="dlghead"><h3 data-i18n="ui.openProject">OPEN</h3>
+      <button class="icn cls" data-i18n-title="ui.close">✕</button></div>
+    <div class="dlgbody"><div id="plist" class="plist"></div></div>
+  </div>
+</div>
+
+<div class="dlg" id="dlgExport">
+  <div class="dlgbox">
+    <div class="dlghead"><h3 data-i18n="ui.exportTitle">EXPORT</h3>
+      <button class="icn cls" data-i18n-title="ui.close">✕</button></div>
+    <div class="dlgbody">
+      <div class="dlgrow"><label data-i18n="ui.format">Format</label><select id="xFmt">
+        <option value="image/png">PNG</option>
+        <option value="image/jpeg">JPEG</option>
+        <option value="image/webp">WebP</option>
+      </select></div>
+      <div class="dlgrow" id="xQualityRow"><label data-i18n="ui.quality">Quality</label>
+        <input type="range" id="xQuality" min="50" max="100" value="92"><span class="val" id="xQualityV">92</span></div>
+      <div class="dlgrow"><label data-i18n="ui.size">Size</label><select id="xSize">
+        <option value="work" data-i18n="ui.sizeWork">Working resolution</option>
+        <option value="full" data-i18n="ui.sizeFull">Full resolution</option>
+      </select></div>
+      <div class="dlgnote" id="xNote"></div>
+    </div>
+    <div class="dlgfoot">
+      <button class="cls" data-i18n="ui.cancel">Cancel</button>
+      <button id="xGo" class="on" data-i18n="ui.export2">Export</button>
+    </div>
+  </div>
 </div>
 
 <input type="file" id="file" accept="image/*,.heic,.heif" multiple hidden>
@@ -279,7 +373,7 @@ const IS_MOBILE = IS_IOS || matchMedia('(pointer:coarse)').matches;
 const AUTO_CAP  = IS_MOBILE ? 2600 : 6000;
 const AUTO_MASK = IS_MOBILE ? 1400 : 3000;
 
-const S={layers:[],sel:null,tool:'move',brush:{size:120,hard:35,flow:70},
+const S={layers:[],sel:null,tool:'move',brush:{size:120,hard:35,flow:70},compare:false,
   view:{x:0,y:0,z:1},doc:{w:0,h:0},bg:'black',cap:0,undo:[],dirty:true,cursor:null};
 
 const comp=document.createElement('canvas'), cctx=comp.getContext('2d');
@@ -339,7 +433,31 @@ const I18N={
   'msg.allLighten':'Every layer above the base set to <b>Lighten</b>',
   'msg.exportFail':'Export failed (memory). Lower the working resolution.',
   'msg.iosExport':'On iOS: open the image then <b>Share → Save to Photos</b>.',
-  'msg.renderError':'Render error: {e}','msg.error':'Error: {e}'
+  'msg.renderError':'Render error: {e}','msg.error':'Error: {e}',
+  'ui.project':'PROJECT','ui.projectName':'Project name','ui.newProject':'New',
+  'ui.saveProject':'Save','ui.openProject':'Open','ui.close':'Close','ui.cancel':'Cancel',
+  'ui.newProjectTitle':'Clear everything and start a new project',
+  'ui.saveProjectTitle':'Save this project in the browser',
+  'ui.openProjectTitle':'Reopen a saved project',
+  'ui.untitled':'Untitled','ui.noProjects':'No saved project yet.',
+  'ui.savedAt':'Saved {t}','ui.autosaved':'Autosaved {t}','ui.neverSaved':'Not saved yet',
+  'ui.deleteProject':'Delete this project',
+  'msg.projectSaved':'Project <b>{name}</b> saved','msg.projectOpened':'Project <b>{name}</b> opened',
+  'msg.projectDeleted':'Project <b>{name}</b> deleted',
+  'msg.saveFailed':'Save failed: {e}','msg.nothingToSave':'Nothing to save yet.',
+  'msg.confirmNew':'Discard the current project? Unsaved changes will be lost.',
+  'msg.confirmDelete':'Delete {name}? This cannot be undone.',
+  'ui.align':'Auto align','ui.alignTitle':'Match every layer to the bottom one, by image content',
+  'msg.aligning':'Aligning…','msg.alignDone':'{n} layers aligned','msg.alignNeed':'Import at least two layers first.',
+  'ui.compareTitle':'Hold to see the base layer alone','ui.soloTitle':'Canvas only (Tab)',
+  'prop.threshold':'Auto mask','ui.thresholdTitle':'Hide everything darker than this luminance',
+  'ui.lock':'Lock','ui.unlock':'Unlock','ui.duplicate':'Duplicate','ui.copySuffix':'copy',
+  'ui.exportTitle':'EXPORT','ui.export2':'Export','ui.format':'Format','ui.quality':'Quality',
+  'ui.size':'Size','ui.sizeWork':'Working resolution','ui.sizeFull':'Full resolution',
+  'ui.noteFull':'Full resolution re-decodes the original files: {w} x {h} px.',
+  'ui.noteNoFull':'Full resolution needs the original files. Layers reopened from a saved project only keep their working copy.',
+  'ui.noteWork':'Exports the working document: {w} x {h} px.',
+  'msg.exporting':'Exporting…','msg.saving':'Saving…'
  },
  fr:{
   'ui.language':'Langue','ui.layers':'Calques','ui.import':' Importer','ui.export':'Exporter ',
@@ -386,7 +504,31 @@ const I18N={
   'msg.allLighten':'Tous les calques supérieurs en <b>Éclaircir</b>',
   'msg.exportFail':'Export impossible (mémoire). Réduis la résolution de travail.',
   'msg.iosExport':'Sur iOS : ouvre l’image puis <b>Partager → Enregistrer dans Photos</b>.',
-  'msg.renderError':'Erreur de rendu : {e}','msg.error':'Erreur : {e}'
+  'msg.renderError':'Erreur de rendu : {e}','msg.error':'Erreur : {e}',
+  'ui.project':'PROJET','ui.projectName':'Nom du projet','ui.newProject':'Nouveau',
+  'ui.saveProject':'Enregistrer','ui.openProject':'Ouvrir','ui.close':'Fermer','ui.cancel':'Annuler',
+  'ui.newProjectTitle':'Vide tout et repart sur un nouveau projet',
+  'ui.saveProjectTitle':'Enregistre ce projet dans le navigateur',
+  'ui.openProjectTitle':'Rouvrir un projet enregistr\u00e9',
+  'ui.untitled':'Sans titre','ui.noProjects':'Aucun projet enregistr\u00e9.',
+  'ui.savedAt':'Enregistr\u00e9 {t}','ui.autosaved':'Sauvegarde auto {t}','ui.neverSaved':'Pas encore enregistr\u00e9',
+  'ui.deleteProject':'Supprimer ce projet',
+  'msg.projectSaved':'Projet <b>{name}</b> enregistr\u00e9','msg.projectOpened':'Projet <b>{name}</b> ouvert',
+  'msg.projectDeleted':'Projet <b>{name}</b> supprim\u00e9',
+  'msg.saveFailed':'\u00c9chec de l\u2019enregistrement : {e}','msg.nothingToSave':'Rien \u00e0 enregistrer pour l\u2019instant.',
+  'msg.confirmNew':'Abandonner le projet en cours ? Les modifications non enregistr\u00e9es seront perdues.',
+  'msg.confirmDelete':'Supprimer {name} ? Cette action est d\u00e9finitive.',
+  'ui.align':'Aligner','ui.alignTitle':'Recale chaque calque sur celui du bas, d\u2019apr\u00e8s le contenu',
+  'msg.aligning':'Alignement\u2026','msg.alignDone':'{n} calques align\u00e9s','msg.alignNeed':'Il faut au moins deux calques.',
+  'ui.compareTitle':'Maintenir pour voir le calque de fond seul','ui.soloTitle':'Canevas seul (Tab)',
+  'prop.threshold':'Masque auto','ui.thresholdTitle':'Masque tout ce qui est plus sombre que cette luminance',
+  'ui.lock':'Verrouiller','ui.unlock':'D\u00e9verrouiller','ui.duplicate':'Dupliquer','ui.copySuffix':'copie',
+  'ui.exportTitle':'EXPORT','ui.export2':'Exporter','ui.format':'Format','ui.quality':'Qualit\u00e9',
+  'ui.size':'Taille','ui.sizeWork':'R\u00e9solution de travail','ui.sizeFull':'Pleine r\u00e9solution',
+  'ui.noteFull':'La pleine r\u00e9solution red\u00e9code les fichiers d\u2019origine : {w} x {h} px.',
+  'ui.noteNoFull':'La pleine r\u00e9solution exige les fichiers d\u2019origine. Les calques rouverts depuis un projet enregistr\u00e9 n\u2019en gardent que la copie de travail.',
+  'ui.noteWork':'Exporte le document de travail : {w} x {h} px.',
+  'msg.exporting':'Export\u2026','msg.saving':'Enregistrement…'
  }
 };
 const LANGS=['en','fr'];
@@ -413,6 +555,7 @@ function applyI18n(){
   document.querySelectorAll('[data-i18n-html]').forEach(el=>{el.innerHTML=t(el.dataset.i18nHtml);});
   document.querySelectorAll('[data-i18n-title]').forEach(el=>{el.title=t(el.dataset.i18nTitle);});
   document.querySelectorAll('[data-i18n-label]').forEach(el=>{el.setAttribute('aria-label',t(el.dataset.i18nLabel));});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{el.placeholder=t(el.dataset.i18nPh);});
   // Libelles de la barre d'etat : texte avant la valeur, valeur preservee.
   document.querySelectorAll('[data-i18n-pre]').forEach(el=>{
     if(el.firstChild&&el.firstChild.nodeType===3)el.firstChild.nodeValue=t(el.dataset.i18nPre)+' ';
@@ -550,10 +693,14 @@ async function addImage(file){
   const L={id:Math.random().toString(36).slice(2),
     name:file.name.replace(/\.[^.]+$/,''),
     src:src.canvas, sw:src.w, sh:src.h,
+    // Le fichier reste reference : il permet un export en pleine resolution
+    // sans garder le bitmap decode en memoire.
+    file, orig:src.orig,
     mask, mctx:mask.getContext('2d'),
     x:0,y:0,scale:1,opacity:1,
     blend:S.layers.length?'lighten':'normal',
-    visible:true, thumb:makeThumb(src.canvas,src.w,src.h)};
+    visible:true, locked:false, thr:0,
+    thumb:makeThumb(src.canvas,src.w,src.h)};
   S.layers.push(L); S.sel=L.id;
   histPush({k:'add',L,i:S.layers.length-1,dw,dh,nw:S.doc.w,nh:S.doc.h});
   return L;
@@ -584,12 +731,13 @@ function snapXf(L){return{x:L.x,y:L.y,scale:L.scale,opacity:L.opacity,blend:L.bl
 function sameXf(a,b){return a.x===b.x&&a.y===b.y&&a.scale===b.scale&&a.opacity===b.opacity&&a.blend===b.blend&&a.visible===b.visible;}
 function applyXf(L,s){L.x=s.x;L.y=s.y;L.scale=s.scale;L.opacity=s.opacity;L.blend=s.blend;L.visible=s.visible;}
 function histUI(){$('btnUndo').disabled=!HIST.undo.length;$('btnRedo').disabled=!HIST.redo.length;}
-function histPush(e){HIST.undo.push(e);while(HIST.undo.length>HIST.limit)HIST.undo.shift();HIST.redo.length=0;histUI();}
+function histPush(e){HIST.undo.push(e);while(HIST.undo.length>HIST.limit)HIST.undo.shift();HIST.redo.length=0;histUI();touchProject();}
 function histApply(e,side){
   if(e.k==='xf')applyXf(e.L,e[side]);
   else if(e.k==='multi')e.list.forEach(x=>applyXf(x.L,x[side]));
   else if(e.k==='mask'){const L=e.L;L.mctx.globalCompositeOperation='source-over';
-    L.mctx.clearRect(0,0,L.mask.width,L.mask.height);L.mctx.drawImage(e[side],0,0);}
+    L.mctx.clearRect(0,0,L.mask.width,L.mask.height);L.mctx.drawImage(e[side],0,0);
+    L.thr=side==='a'?e.ta:e.tb;}
   else if(e.k==='ord')S.layers=e[side].slice();
   else if(e.k==='del'){
     if(side==='a'){S.layers.splice(e.i,0,e.L);S.sel=e.L.id;}
@@ -617,9 +765,9 @@ function xfDo(L,fn){if(!L)return;const a=snapXf(L);fn();const b=snapXf(L);
 
 // Masques : instantané avant / après le tracé.
 let maskPend=null;
-function maskBegin(L){maskPend={L,a:cloneCanvas(L.mask)};}
-function maskCommit(){if(!maskPend)return;const L=maskPend.L,a=maskPend.a;maskPend=null;
-  histPush({k:'mask',L,a,b:cloneCanvas(L.mask)});}
+function maskBegin(L){maskPend={L,a:cloneCanvas(L.mask),ta:L.thr||0};}
+function maskCommit(){if(!maskPend)return;const L=maskPend.L,a=maskPend.a,ta=maskPend.ta;maskPend=null;
+  histPush({k:'mask',L,a,b:cloneCanvas(L.mask),ta,tb:L.thr||0});}
 
 /* ---------------- propriétés réglables d'un calque ----------------
    Chaque propriété expose la même interface : lecture, écriture bornée,
@@ -641,7 +789,12 @@ const PROPS={
       range:L=>{const r=Math.round(Math.max(S.doc.w,Math.abs(L.x)+200));return[-r,r];}},
   py:{label:'prop.y',unit:'px',step:1,fine:[1,10],
       get:L=>Math.round(L.y),set:(L,v)=>{L.y=v;},
-      range:L=>{const r=Math.round(Math.max(S.doc.h,Math.abs(L.y)+200));return[-r,r];}}
+      range:L=>{const r=Math.round(Math.max(S.doc.h,Math.abs(L.y)+200));return[-r,r];}},
+  // Le seuil regenere le masque, il ne fait pas partie de la transformation :
+  // son historique passe par les instantanes de masque.
+  thr:{label:'prop.threshold',unit:'%',step:1,fine:[1,5],mask:true,
+      get:L=>Math.round(L.thr||0),set:(L,v)=>{applyThreshold(L,clamp(v,0,100));},
+      range:()=>[0,100]}
 };
 // key : identifiant de propriete. Surtout pas nomme t, qui masquerait la
 // fonction de traduction dans cette portee.
@@ -663,8 +816,8 @@ function propHTML(L,key){
 function syncLayerUI(L){
   const d=document.querySelector('.layer.sel');
   if(!d||!L||L.id!==S.sel)return;
-  for(const t in PROPS){
-    const p=PROPS[t],n=d.querySelector('.n_'+t),r=d.querySelector('.r_'+t);
+  for(const key in PROPS){
+    const p=PROPS[key],n=d.querySelector('.n_'+key),r=d.querySelector('.r_'+key);
     if(!n||!r)continue;
     const v=p.get(L);
     if(document.activeElement!==n)n.value=v;
@@ -703,11 +856,13 @@ function buildList(){
   el.innerHTML='';
   [...S.layers].reverse().forEach(L=>{
     const d=document.createElement('div');
-    d.className='layer'+(L.id===S.sel?' sel':'')+(L.visible?'':' off');
+    d.className='layer'+(L.id===S.sel?' sel':'')+(L.visible?'':' off')+(L.locked?' lock':'');
     d.innerHTML='<div class="lhead">'
       +'<button class="icn eye" title="'+esc(t('ui.toggleVisible'))+'">'+(L.visible?'◉':'○')+'</button>'
+      +'<button class="icn lock'+(L.locked?' on':'')+'" title="'+esc(t(L.locked?'ui.unlock':'ui.lock'))+'">'+(L.locked?'◆':'◇')+'</button>'
       +'<span class="thumb"></span>'
       +'<span class="lname">'+esc(L.name)+'</span>'
+      +'<button class="icn dup" title="'+esc(t('ui.duplicate'))+'">⧉</button>'
       +'<button class="icn up" title="'+esc(t('ui.moveUp'))+'">▲</button>'
       +'<button class="icn dn" title="'+esc(t('ui.moveDown'))+'">▼</button>'
       +'<button class="icn del" title="'+esc(t('ui.delete'))+'">✕</button>'
@@ -716,13 +871,15 @@ function buildList(){
       +'<div class="row"><label>'+t('ui.blend')+'</label><select class="blend">'
       +BLENDS.map(b=>'<option value="'+b+'"'+(b===L.blend?' selected':'')+'>'+esc(blendLabel(b))+'</option>').join('')
       +'</select></div>'
-      +propHTML(L,'op')+propHTML(L,'sc')+propHTML(L,'px')+propHTML(L,'py')
+      +propHTML(L,'op')+propHTML(L,'sc')+propHTML(L,'px')+propHTML(L,'py')+propHTML(L,'thr')
       +'<div class="seclabel">'+t('ui.fitLayer')+'</div>'
       +'<div class="fits">'+FITS.map(f=>'<button data-fit="'+f+'" title="'+esc(t('fitTitle.'+f))+'">'+esc(t('fit.'+f))+'</button>').join('')+'</div>'
       +'</div>';
     d.querySelector('.thumb').appendChild(cloneCanvas(L.thumb));
     d.querySelector('.lhead').onclick=e=>{if(e.target.closest('.icn'))return;S.sel=L.id;buildList();S.dirty=true;};
     d.querySelector('.eye').onclick=()=>{xfDo(L,()=>L.visible=!L.visible);buildList();};
+    d.querySelector('.lock').onclick=()=>{L.locked=!L.locked;buildList();touchProject();};
+    d.querySelector('.dup').onclick=()=>duplicateLayer(L);
     d.querySelector('.up').onclick=()=>moveLayer(L,1);
     d.querySelector('.dn').onclick=()=>moveLayer(L,-1);
     d.querySelector('.del').onclick=()=>{
@@ -733,20 +890,24 @@ function buildList(){
 
     const body=d.querySelector('.lbody');
     body.querySelector('.blend').onchange=e=>{const v=e.target.value;xfDo(L,()=>L.blend=v);};
+    const begin=p=>p.mask?maskBegin(L):xfBegin(L);
+    const commit=p=>{p.mask?maskCommit():xfCommit();touchProject();};
     body.querySelectorAll('.stp').forEach(b=>{
       b.onclick=()=>{const p=PROPS[b.dataset.t];
-        xfBegin(L);p.set(L,p.get(L)+parseFloat(b.dataset.d));xfCommit();
+        begin(p);p.set(L,p.get(L)+parseFloat(b.dataset.d));commit(p);
         syncLayerUI(L);S.dirty=true;};
     });
-    for(const t in PROPS){
-      const p=PROPS[t],n=body.querySelector('.n_'+t),r=body.querySelector('.r_'+t);
-      const live=v=>{if(!isFinite(v))return;xfBegin(L);p.set(L,v);syncLayerUI(L);S.dirty=true;};
+    for(const key in PROPS){
+      const p=PROPS[key],n=body.querySelector('.n_'+key),r=body.querySelector('.r_'+key);
+      let held=false;
+      const live=v=>{if(!isFinite(v))return;if(!held){begin(p);held=true;}p.set(L,v);syncLayerUI(L);S.dirty=true;};
+      const end=()=>{if(held){commit(p);held=false;}};
       n.oninput=()=>{if(n.value===''||n.value==='-')return;live(parseFloat(n.value));};
-      n.onchange=()=>{const v=parseFloat(n.value);if(isFinite(v))live(v);xfCommit();syncLayerUI(L);};
-      n.onblur=()=>{xfCommit();syncLayerUI(L);};
-      r.onpointerdown=()=>xfBegin(L);
+      n.onchange=()=>{const v=parseFloat(n.value);if(isFinite(v))live(v);end();syncLayerUI(L);};
+      n.onblur=()=>{end();syncLayerUI(L);};
+      r.onpointerdown=()=>{begin(p);held=true;};
       r.oninput=()=>live(parseFloat(r.value));
-      r.onchange=()=>{xfCommit();syncLayerUI(L);};
+      r.onchange=()=>{end();syncLayerUI(L);};
     }
     body.querySelectorAll('[data-fit]').forEach(b=>{b.onclick=()=>fitLayer(L,b.dataset.fit);});
     el.appendChild(d);
@@ -860,7 +1021,9 @@ function compose(){
   cctx.setTransform(1,0,0,1,0,0);cctx.globalAlpha=1;cctx.globalCompositeOperation='source-over';
   cctx.clearRect(0,0,comp.width,comp.height);
   if(S.bg==='black'){cctx.fillStyle='#000';cctx.fillRect(0,0,comp.width,comp.height);}
-  for(const L of S.layers){
+  // Comparaison : seul le calque de fond, pour juger l'apport de la pile.
+  const src=S.compare?S.layers.slice(0,1):S.layers;
+  for(const L of src){
     if(!L.visible||L.opacity<=0)continue;
     const w=L.sw*L.scale,h=L.sh*L.scale;
     tctx.setTransform(1,0,0,1,0,0);tctx.globalAlpha=1;tctx.globalCompositeOperation='source-over';
@@ -983,7 +1146,7 @@ addEventListener('keydown',e=>{
   if(mod&&k==='y'){e.preventDefault();redo();return;}
   // Flèches : déplacement du calque au pixel, 10 px avec Maj.
   if(e.key.indexOf('Arrow')===0){
-    const L=sel();if(!L)return;
+    const L=sel();if(!L||L.locked)return;
     e.preventDefault();
     const n=e.shiftKey?10:1;
     xfBegin(L);
@@ -995,10 +1158,15 @@ addEventListener('keydown',e=>{
   else if(e.key==='['||e.key===']'){const f=e.key==='['?1/1.25:1.25;
     S.brush.size=Math.min(800,Math.max(2,S.brush.size*f));$('bSize').value=S.brush.size;$('bSizeV').textContent=Math.round(S.brush.size);}
   else if(k==='s'){SNAP.on=!SNAP.on;$('btnSnap').classList.toggle('on',SNAP.on);}
+  else if(e.key==='\\'){e.preventDefault();setCompare(true);}
+  else if(e.key==='Tab'){e.preventDefault();setSolo(!document.body.classList.contains('solo'));}
   else if(k==='f')fitView();
   else if(e.code==='Space'){e.preventDefault();panKey=true;view.style.cursor='grab';}
 });
-addEventListener('keyup',e=>{if(e.code==='Space'){panKey=false;setTool(S.tool);}});
+addEventListener('keyup',e=>{
+  if(e.code==='Space'){panKey=false;setTool(S.tool);}
+  if(e.key==='\\')setCompare(false);
+});
 
 /* ---------------- pointeurs : pinch / pan / peinture ---------------- */
 let drag=null;const pts=new Map();let pinch=null;
@@ -1009,7 +1177,7 @@ view.addEventListener('pointerdown',e=>{
   view.setPointerCapture(e.pointerId);
   if(pts.size===2){drag=null;startPinch();return;}
   if(panKey||e.button===1||e.button===2){drag={t:'pan',sx,sy,ox:S.view.x,oy:S.view.y};return;}
-  const L=sel();if(!L)return;
+  const L=sel();if(!L||L.locked)return;
   if(S.tool==='move'){
     const i=hitHandle(L,sx,sy);
     if(i>=0){
@@ -1100,6 +1268,7 @@ function paint(L,sx,sy,pressure){
   else stamp(mx,my);
   if(drag)drag.last={x:mx,y:my};
   ctx.globalCompositeOperation='source-over';
+  L.thr=0;                       // le masque n'est plus celui du seuil
   S.dirty=true;
 }
 $('btnMaskAll').onclick=()=>{const L=sel();if(!L)return;maskBegin(L);
@@ -1107,6 +1276,376 @@ $('btnMaskAll').onclick=()=>{const L=sel();if(!L)return;maskBegin(L);
   L.mctx.fillRect(0,0,L.mask.width,L.mask.height);maskCommit();S.dirty=true;};
 $('btnMaskClear').onclick=()=>{const L=sel();if(!L)return;maskBegin(L);
   L.mctx.clearRect(0,0,L.mask.width,L.mask.height);maskCommit();S.dirty=true;};
+/* ---------------- alignement automatique ----------------
+   Les rafales a main levee bougent de quelques pixels entre les vues.
+   On recale chaque calque sur celui du bas par correlation croisee
+   normalisee, en pyramide : recherche large sur une version minuscule,
+   puis affinage. Le calcul porte sur le gradient, insensible aux ecarts
+   d'exposition et aux eclairs qui n'apparaissent que sur une image.     */
+function grayPyramid(canvas,w,h,size){
+  const r=Math.min(1,size/Math.max(w,h));
+  const gw=Math.max(8,Math.round(w*r)),gh=Math.max(8,Math.round(h*r));
+  const c=document.createElement('canvas');c.width=gw;c.height=gh;
+  const x=c.getContext('2d',{willReadFrequently:true});
+  x.imageSmoothingQuality='high';x.drawImage(canvas,0,0,gw,gh);
+  const d=x.getImageData(0,0,gw,gh).data;
+  const lum=new Float32Array(gw*gh);
+  for(let i=0,j=0;i<lum.length;i++,j+=4)lum[i]=.2126*d[j]+.7152*d[j+1]+.0722*d[j+2];
+  // Gradient de Sobel simplifie : on compare des contours, pas des niveaux.
+  const g=new Float32Array(gw*gh);
+  for(let y=1;y<gh-1;y++)for(let x2=1;x2<gw-1;x2++){
+    const i=y*gw+x2;
+    const dx=lum[i+1]-lum[i-1],dy=lum[i+gw]-lum[i-gw];
+    g[i]=Math.sqrt(dx*dx+dy*dy);
+  }
+  let m=0;for(let i=0;i<g.length;i++)m+=g[i];m/=g.length;
+  for(let i=0;i<g.length;i++)g[i]-=m;        // centrage, pour une correlation normalisee
+  return{g,w:gw,h:gh,r};
+}
+// Correlation du calque b sur a pour un decalage (ox,oy) exprime en pixels
+// de la pyramide. Renvoie un score comparable entre decalages.
+function corr(a,b,ox,oy){
+  const x0=Math.max(0,ox),x1=Math.min(a.w,b.w+ox);
+  const y0=Math.max(0,oy),y1=Math.min(a.h,b.h+oy);
+  if(x1-x0<8||y1-y0<8)return -Infinity;
+  let sab=0,saa=0,sbb=0,n=0;
+  const step=(x1-x0)*(y1-y0)>40000?2:1;      // sous-echantillonnage sur les grands niveaux
+  for(let y=y0;y<y1;y+=step){
+    const ra=y*a.w,rb=(y-oy)*b.w-ox;
+    for(let x=x0;x<x1;x+=step){
+      const va=a.g[ra+x],vb=b.g[rb+x];
+      sab+=va*vb;saa+=va*va;sbb+=vb*vb;n++;
+    }
+  }
+  if(!n||saa<=0||sbb<=0)return -Infinity;
+  return sab/Math.sqrt(saa*sbb);
+}
+function bestOffset(a,b,cx,cy,rad){
+  let best={s:-Infinity,x:cx,y:cy};
+  for(let oy=cy-rad;oy<=cy+rad;oy++)for(let ox=cx-rad;ox<=cx+rad;ox++){
+    const s=corr(a,b,ox,oy);
+    if(s>best.s)best={s,x:ox,y:oy};
+  }
+  return best;
+}
+// Le maximum de correlation tombe rarement pile sur un pixel. On ajuste une
+// parabole sur les voisins immediats pour recuperer la fraction.
+function subPixel(a,b,bx,by){
+  const c0=corr(a,b,bx,by);
+  const fit=(m,p)=>{const d=m-2*c0+p;return (isFinite(d)&&d!==0)?clampF(.5*(m-p)/d,-.5,.5):0;};
+  const dx=fit(corr(a,b,bx-1,by),corr(a,b,bx+1,by));
+  const dy=fit(corr(a,b,bx,by-1),corr(a,b,bx,by+1));
+  return{x:bx+dx,y:by+dy};
+}
+const clampF=(v,a,b)=>Math.min(b,Math.max(a,v));
+async function autoAlign(){
+  if(S.layers.length<2){say(t('msg.alignNeed'),4000);return;}
+  say(t('msg.aligning'),120000);
+  await new Promise(r=>setTimeout(r,30));
+  const base=S.layers[0];
+  const LEVELS=[96,192,384,768];
+  const refs=LEVELS.map(sz=>grayPyramid(base.src,base.sw,base.sh,sz));
+  const list=[];
+  for(let i=1;i<S.layers.length;i++){
+    const L=S.layers[i];
+    if(L.locked)continue;
+    const a=snapXf(L);
+    let ox=0,oy=0;
+    for(let lv=0;lv<LEVELS.length;lv++){
+      const ref=refs[lv],cur=grayPyramid(L.src,L.sw,L.sh,LEVELS[lv]);
+      if(lv>0){const k=ref.r/refs[lv-1].r;ox=Math.round(ox*k);oy=Math.round(oy*k);}
+      const rad=lv===0?24:3;
+      const b=bestOffset(ref,cur,ox,oy,rad);
+      if(lv===LEVELS.length-1){const f=subPixel(ref,cur,b.x,b.y);ox=f.x;oy=f.y;}
+      else{ox=b.x;oy=b.y;}
+    }
+    const last=refs[LEVELS.length-1];
+    // Retour en unites document : le decalage est mesure sur la pyramide.
+    L.scale=base.scale;
+    L.x=Math.round(base.x+ox/last.r*base.scale);
+    L.y=Math.round(base.y+oy/last.r*base.scale);
+    const b2=snapXf(L);
+    if(!sameXf(a,b2))list.push({L,a,b:b2});
+    S.dirty=true;
+    await new Promise(r=>setTimeout(r,0));
+  }
+  if(list.length)histPush({k:'multi',list});
+  buildList();
+  say(t('msg.alignDone',{n:list.length}),3000);
+}
+$('btnAlign').onclick=()=>{autoAlign();};
+
+/* ---------------- masque automatique par luminance ----------------
+   Un curseur qui ne garde du calque que ce qui depasse une luminance,
+   avec un bord adouci. La table de luminance est calculee une fois par
+   calque, a la resolution du masque.                                    */
+function lumTable(L){
+  if(L.lum)return L.lum;
+  const w=L.mask.width,h=L.mask.height;
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const x=c.getContext('2d',{willReadFrequently:true});
+  x.imageSmoothingQuality='high';x.drawImage(L.src,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data;
+  const lum=new Uint8ClampedArray(w*h);
+  for(let i=0,j=0;i<lum.length;i++,j+=4)lum[i]=.2126*d[j]+.7152*d[j+1]+.0722*d[j+2];
+  L.lum=lum;
+  return lum;
+}
+// seuil 0 = rien de masque. 100 = tout masque.
+function applyThreshold(L,pct){
+  L.thr=pct;
+  const w=L.mask.width,h=L.mask.height;
+  if(pct<=0){L.mctx.globalCompositeOperation='source-over';L.mctx.clearRect(0,0,w,h);S.dirty=true;return;}
+  const lum=lumTable(L);
+  const img=L.mctx.createImageData(w,h);
+  const d=img.data;
+  const cut=pct/100*255,soft=Math.max(6,255*0.06);   // bord adouci sur ~6 % de la plage
+  for(let i=0,j=3;i<lum.length;i++,j+=4){
+    const v=(cut-lum[i])/soft;                       // >0 : plus sombre que le seuil
+    d[j]=v<=0?0:(v>=1?255:Math.round(v*255));
+  }
+  L.mctx.globalCompositeOperation='source-over';
+  L.mctx.putImageData(img,0,0);
+  S.dirty=true;
+}
+
+/* ---------------- comparaison avant / apres ---------------- */
+function setCompare(on){
+  if(S.compare===on)return;
+  S.compare=on;$('btnCompare').classList.toggle('on',on);S.dirty=true;
+}
+['pointerdown'].forEach(e=>$('btnCompare').addEventListener(e,ev=>{ev.preventDefault();setCompare(true);}));
+['pointerup','pointercancel','pointerleave'].forEach(e=>$('btnCompare').addEventListener(e,()=>setCompare(false)));
+
+/* ---------------- canevas seul ---------------- */
+function setSolo(on){
+  document.body.classList.toggle('solo',on);
+  $('btnSolo').classList.toggle('on',on);
+  S.dirty=true;
+}
+$('btnSolo').onclick=()=>setSolo(!document.body.classList.contains('solo'));
+
+/* ---------------- verrouillage et duplication ---------------- */
+function duplicateLayer(L){
+  const i=S.layers.indexOf(L);if(i<0)return;
+  const mask=document.createElement('canvas');
+  mask.width=L.mask.width;mask.height=L.mask.height;
+  mask.getContext('2d').drawImage(L.mask,0,0);
+  const D={id:Math.random().toString(36).slice(2),
+    name:L.name+' '+t('ui.copySuffix'),
+    src:L.src,sw:L.sw,sh:L.sh,file:L.file,orig:L.orig,
+    mask,mctx:mask.getContext('2d'),
+    x:L.x,y:L.y,scale:L.scale,opacity:L.opacity,blend:L.blend,
+    visible:L.visible,locked:false,thr:L.thr,thumb:L.thumb};
+  S.layers.splice(i+1,0,D);S.sel=D.id;
+  histPush({k:'add',L:D,i:i+1,dw:S.doc.w,dh:S.doc.h,nw:S.doc.w,nh:S.doc.h});
+  buildList();S.dirty=true;
+}
+
+/* ---------------- projets ----------------
+   L'index (noms, dates) tient dans localStorage. Les images, elles,
+   depassent largement sa limite : elles vont dans IndexedDB sous forme
+   de blobs. Une sauvegarde automatique differee suit le travail.        */
+const DB_NAME='stormstack',DB_STORE='projects',IDX_KEY='stormstack.projects',CUR_KEY='stormstack.current';
+let dbP=null;
+function db(){
+  if(dbP)return dbP;
+  dbP=new Promise((res,rej)=>{
+    const r=indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(DB_STORE))d.createObjectStore(DB_STORE);};
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error||new Error('IndexedDB'));
+  });
+  return dbP;
+}
+async function dbPut(key,val){
+  const d=await db();
+  return new Promise((res,rej)=>{const tx=d.transaction(DB_STORE,'readwrite');
+    tx.objectStore(DB_STORE).put(val,key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});
+}
+async function dbGet(key){
+  const d=await db();
+  return new Promise((res,rej)=>{const tx=d.transaction(DB_STORE,'readonly');
+    const q=tx.objectStore(DB_STORE).get(key);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});
+}
+async function dbDel(key){
+  const d=await db();
+  return new Promise((res,rej)=>{const tx=d.transaction(DB_STORE,'readwrite');
+    tx.objectStore(DB_STORE).delete(key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});
+}
+function projIndex(){
+  try{const v=JSON.parse(localStorage.getItem(IDX_KEY));return Array.isArray(v)?v:[];}catch(e){return[];}
+}
+function setProjIndex(list){
+  try{localStorage.setItem(IDX_KEY,JSON.stringify(list));}catch(e){}
+}
+function fmtDate(ts){
+  const d=new Date(ts);
+  try{return d.toLocaleString(LANG,{dateStyle:'short',timeStyle:'short'});}catch(e){return d.toLocaleString();}
+}
+function toBlob(canvas,type,q){
+  return new Promise(res=>{
+    if(canvas.toBlob)canvas.toBlob(b=>res(b),type,q);
+    else res(null);
+  });
+}
+function projectName(){
+  const v=$('pname').value.trim();
+  return v||t('ui.untitled');
+}
+let curKey=null;
+let saving=false;
+async function saveProject(auto){
+  // La sauvegarde automatique n'invente pas de projet : elle ne fait que
+  // maintenir a jour celui que l'utilisateur a deja enregistre.
+  if(auto&&!curKey)return;
+  if(saving)return;
+  if(!S.layers.length){if(!auto)say(t('msg.nothingToSave'),3000);return;}
+  const name=projectName();
+  // Un projet deja enregistre sous ce nom est mis a jour, pas duplique.
+  const known=projIndex().find(e=>e.name===name);
+  const key=(known&&known.key)||curKey||('p'+Date.now().toString(36));
+  // La pile peut changer pendant l'encodage : on fige la liste maintenant.
+  const stack=S.layers.slice();
+  saving=true;
+  if(!auto){$('pSave').disabled=true;$('pSaved').textContent=t('msg.saving');}
+  try{
+    const layers=[];
+    for(const L of stack){
+      let src=await toBlob(L.src,'image/webp',.92);
+      if(!src)src=await toBlob(L.src,'image/png');
+      layers.push({
+        name:L.name,x:L.x,y:L.y,scale:L.scale,opacity:L.opacity,blend:L.blend,
+        visible:L.visible,locked:!!L.locked,thr:L.thr||0,sw:L.sw,sh:L.sh,
+        orig:L.orig||null,src,
+        mask:await toBlob(L.mask,'image/png'),
+        mw:L.mask.width,mh:L.mask.height
+      });
+    }
+    await dbPut(key,{name,doc:{w:S.doc.w,h:S.doc.h},bg:S.bg,cap:S.cap,layers,savedAt:Date.now()});
+    const idx=projIndex().filter(e=>e.key!==key);
+    idx.unshift({key,name,savedAt:Date.now(),layers:layers.length});
+    setProjIndex(idx.slice(0,40));
+    try{localStorage.setItem(CUR_KEY,key);}catch(e){}
+    curKey=key;
+    $('pSaved').textContent=t(auto?'ui.autosaved':'ui.savedAt',{t:fmtDate(Date.now())});
+    if(!auto)say(t('msg.projectSaved',{name:esc(name)}),2500);
+  }catch(e){
+    console.error(e);
+    say(t('msg.saveFailed',{e:esc(String(e&&e.message||e))}),8000);
+    $('pSaved').textContent=t('ui.neverSaved');
+  }finally{
+    saving=false;
+    $('pSave').disabled=false;
+  }
+}
+function blobToCanvas(blob,w,h){
+  return new Promise((res,rej)=>{
+    if(!blob){const c=document.createElement('canvas');c.width=w;c.height=h;return res(c);}
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    img.onload=()=>{const c=document.createElement('canvas');
+      c.width=img.naturalWidth||w;c.height=img.naturalHeight||h;
+      c.getContext('2d').drawImage(img,0,0);URL.revokeObjectURL(url);res(c);};
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('blob'));};
+    img.src=url;
+  });
+}
+async function openProject(key){
+  clearTimeout(autoT);
+  const rec=await dbGet(key);
+  if(!rec)return;
+  S.layers=[];S.sel=null;HIST.undo.length=0;HIST.redo.length=0;
+  S.doc.w=rec.doc.w;S.doc.h=rec.doc.h;resizeDoc();
+  S.bg=rec.bg||'black';$('bg').value=S.bg;
+  S.cap=rec.cap||0;$('cap').value=String(S.cap);
+  for(const r of rec.layers){
+    const src=await blobToCanvas(r.src,r.sw,r.sh);
+    const mask=await blobToCanvas(r.mask,r.mw,r.mh);
+    S.layers.push({id:Math.random().toString(36).slice(2),
+      name:r.name,src,sw:r.sw,sh:r.sh,file:null,orig:r.orig,
+      mask,mctx:mask.getContext('2d'),
+      x:r.x,y:r.y,scale:r.scale,opacity:r.opacity,blend:r.blend,
+      visible:r.visible,locked:!!r.locked,thr:r.thr||0,
+      thumb:makeThumb(src,r.sw,r.sh)});
+  }
+  S.sel=S.layers.length?S.layers[S.layers.length-1].id:null;
+  curKey=key;
+  $('pname').value=rec.name;
+  $('pSaved').textContent=t('ui.savedAt',{t:fmtDate(rec.savedAt)});
+  try{localStorage.setItem(CUR_KEY,key);}catch(e){}
+  buildList();fitView();histUI();S.dirty=true;
+  say(t('msg.projectOpened',{name:esc(rec.name)}),2500);
+}
+function newProject(){
+  if(S.layers.length&&!confirm(t('msg.confirmNew')))return;
+  clearTimeout(autoT);
+  S.layers=[];S.sel=null;S.doc.w=0;S.doc.h=0;
+  HIST.undo.length=0;HIST.redo.length=0;
+  curKey=null;
+  $('pname').value='';$('pSaved').textContent=t('ui.neverSaved');
+  $('sDoc').textContent=t('ui.none');
+  try{localStorage.removeItem(CUR_KEY);}catch(e){}
+  buildList();histUI();S.dirty=true;
+}
+$('pNew').onclick=newProject;
+$('pSave').onclick=()=>saveProject(false);
+// Renommer met a jour l'entree d'index du projet courant.
+$('pname').onchange=()=>{
+  if(!curKey)return;
+  const idx=projIndex(),e=idx.find(x=>x.key===curKey);
+  if(!e)return;
+  e.name=projectName();setProjIndex(idx);touchProject();
+};
+$('pOpen').onclick=()=>{buildProjectList();openDlg('dlgOpen');};
+
+function buildProjectList(){
+  const el=$('plist'),idx=projIndex();
+  if(!idx.length){el.innerHTML='<div class="empty">'+t('ui.noProjects')+'</div>';return;}
+  el.innerHTML='';
+  idx.forEach(e=>{
+    const d=document.createElement('div');
+    d.className='pitem';
+    d.innerHTML='<span class="nm">'+esc(e.name)+'</span>'
+      +'<span class="dt">'+esc(fmtDate(e.savedAt))+'</span>'
+      +'<button class="icn del" title="'+esc(t('ui.deleteProject'))+'">✕</button>';
+    d.onclick=ev=>{
+      if(ev.target.closest('.del')){
+        if(!confirm(t('msg.confirmDelete',{name:e.name})))return;
+        dbDel(e.key);
+        setProjIndex(projIndex().filter(x=>x.key!==e.key));
+        if(curKey===e.key)curKey=null;
+        buildProjectList();
+        say(t('msg.projectDeleted',{name:esc(e.name)}),2500);
+        return;
+      }
+      closeDlg('dlgOpen');
+      openProject(e.key);
+    };
+    el.appendChild(d);
+  });
+}
+
+// Sauvegarde automatique differee : elle suit le travail sans le hacher.
+let autoT=null;
+function touchProject(){
+  if(!S.layers.length||!curKey)return;
+  clearTimeout(autoT);
+  autoT=setTimeout(()=>saveProject(true),4000);
+}
+
+/* ---------------- boites de dialogue ---------------- */
+function openDlg(id){$(id).classList.add('open');}
+function closeDlg(id){$(id).classList.remove('open');}
+document.querySelectorAll('.dlg').forEach(d=>{
+  d.addEventListener('pointerdown',e=>{if(e.target===d)closeDlg(d.id);});
+  d.querySelectorAll('.cls').forEach(b=>{b.onclick=()=>closeDlg(d.id);});
+});
+addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  document.querySelectorAll('.dlg.open').forEach(d=>closeDlg(d.id));
+});
+
 /* ---------------- composition ---------------- */
 $('bg').onchange=e=>{S.bg=e.target.value;S.dirty=true;};
 $('btnLighten').onclick=()=>{
@@ -1126,26 +1665,110 @@ $('allCover').onclick=()=>fitAll('cover');
 $('allWidth').onclick=()=>fitAll('w');
 $('allHeight').onclick=()=>fitAll('h');
 $('allOne').onclick=()=>fitAll('one');
+/* ---------------- export ----------------
+   Deux tailles. La resolution de travail rend le tampon deja compose.
+   La pleine resolution redecode les fichiers d'origine et recompose a
+   l'echelle des pixels reels : c'est le seul moyen d'y gagner du detail,
+   agrandir la copie de travail n'en inventerait pas.                    */
+function fullFactor(){
+  let f=1;
+  for(const L of S.layers){
+    if(!L.file||!L.orig)continue;
+    f=Math.max(f,L.orig[0]/L.sw);
+  }
+  return f;
+}
+function canFull(){return S.layers.some(L=>L.file&&L.orig&&L.orig[0]>L.sw);}
+function updateExportNote(){
+  const full=$('xSize').value==='full';
+  const lossy=$('xFmt').value!=='image/png';
+  $('xQualityRow').style.display=lossy?'':'none';
+  if(full&&!canFull()){$('xNote').innerHTML=t('ui.noteNoFull');return;}
+  const f=full?fullFactor():1;
+  const w=Math.round(S.doc.w*f),h=Math.round(S.doc.h*f);
+  $('xNote').innerHTML=t(full?'ui.noteFull':'ui.noteWork',{w,h});
+}
+$('xFmt').onchange=updateExportNote;
+$('xSize').onchange=updateExportNote;
+$('xQuality').oninput=()=>{$('xQualityV').textContent=$('xQuality').value;};
 $('btnExport').onclick=()=>{
   if(!S.layers.length)return;
-  compose();
-  const name='stormstack_'+new Date().toISOString().slice(0,19).replace(/[:T-]/g,'')+'.png';
-  if(comp.toBlob){
-    comp.toBlob(b=>{
-      if(!b){say(t('msg.exportFail'));return;}
-      const url=URL.createObjectURL(b);
-      const a=document.createElement('a');a.href=url;a.download=name;
-      document.body.appendChild(a);a.click();a.remove();
-      if(IS_IOS)say(t('msg.iosExport'),7000);
-      setTimeout(()=>URL.revokeObjectURL(url),8000);
-    },'image/png');
-  }else{const a=document.createElement('a');a.href=comp.toDataURL('image/png');a.download=name;a.click();}
+  if(!canFull()&&$('xSize').value==='full')$('xSize').value='work';
+  updateExportNote();
+  openDlg('dlgExport');
+};
+// Compose a l'echelle f en redecodant les sources d'origine quand elles
+// sont encore disponibles.
+async function composeFull(f){
+  const w=Math.round(S.doc.w*f),h=Math.round(S.doc.h*f);
+  const out=document.createElement('canvas');out.width=w;out.height=h;
+  const o=out.getContext('2d');
+  const buf=document.createElement('canvas');buf.width=w;buf.height=h;
+  const bx=buf.getContext('2d');
+  o.globalCompositeOperation='source-over';
+  if(S.bg==='black'){o.fillStyle='#000';o.fillRect(0,0,w,h);}
+  for(const L of S.layers){
+    if(!L.visible||L.opacity<=0)continue;
+    let img=L.src;
+    if(L.file){
+      try{const bmp=await decodeFile(L.file);img=bmp;}catch(e){img=L.src;}
+    }
+    bx.setTransform(1,0,0,1,0,0);bx.globalAlpha=1;bx.globalCompositeOperation='source-over';
+    bx.clearRect(0,0,w,h);
+    bx.imageSmoothingQuality='high';
+    const dw=L.sw*L.scale*f,dh=L.sh*L.scale*f;
+    bx.drawImage(img,L.x*f,L.y*f,dw,dh);
+    bx.globalCompositeOperation='destination-out';
+    bx.drawImage(L.mask,L.x*f,L.y*f,dw,dh);
+    bx.globalCompositeOperation='source-over';
+    if(img!==L.src&&img.close)img.close();
+    o.globalAlpha=L.opacity;
+    o.globalCompositeOperation=(L.blend==='normal')?'source-over':L.blend;
+    o.drawImage(buf,0,0);
+    await new Promise(r=>setTimeout(r,0));
+  }
+  o.globalAlpha=1;o.globalCompositeOperation='source-over';
+  return out;
+}
+$('xGo').onclick=async()=>{
+  const type=$('xFmt').value,q=parseInt($('xQuality').value,10)/100;
+  const full=$('xSize').value==='full'&&canFull();
+  closeDlg('dlgExport');
+  say(t('msg.exporting'),120000);
+  await new Promise(r=>setTimeout(r,30));
+  let canvas;
+  try{
+    if(full)canvas=await composeFull(fullFactor());
+    else{compose();canvas=comp;}
+  }catch(e){console.error(e);say(t('msg.exportFail'),8000);return;}
+  const ext=type==='image/jpeg'?'jpg':(type==='image/webp'?'webp':'png');
+  const base=(($('pname').value.trim()||'stormstack').replace(/[^\w-]+/g,'_'))||'stormstack';
+  const name=base+'_'+new Date().toISOString().slice(0,19).replace(/[:T-]/g,'')+'.'+ext;
+  const done=blob=>{
+    if(!blob){say(t('msg.exportFail'),8000);return;}
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    if(IS_IOS)say(t('msg.iosExport'),7000);
+    else $('msg').style.display='none';
+    setTimeout(()=>URL.revokeObjectURL(url),8000);
+  };
+  if(canvas.toBlob)canvas.toBlob(done,type,type==='image/png'?undefined:q);
+  else{const a=document.createElement('a');a.href=canvas.toDataURL(type,q);a.download=name;a.click();}
+  $('msg').style.display='none';
 };
 
 applyI18n();
 setTool('move');
 histUI();
 loop();
+$('xQualityV').textContent=$('xQuality').value;
+// Reprise du dernier projet ouvert, si le navigateur en garde un.
+(function(){
+  let k=null;try{k=localStorage.getItem(CUR_KEY);}catch(e){}
+  if(k&&projIndex().some(e=>e.key===k))openProject(k).catch(e=>console.error(e));
+  else $('pSaved').textContent=t('ui.neverSaved');
+})();
 </script>
 </body>
 </html>
