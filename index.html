@@ -81,10 +81,15 @@ aside{background:var(--panel);border-right:1px solid var(--line);display:flex;fl
 .seclabel{font-size:10px;letter-spacing:.14em;color:var(--dim);margin:10px 0 2px}
 header button{white-space:nowrap;flex:none}
 .hgrp{display:flex;gap:4px;flex:none}
+#logo{height:30px;width:auto;flex:none;display:block;image-rendering:auto}
+.lang{margin-right:2px}
+.lg{font-size:10px;letter-spacing:.06em;min-width:30px;padding:7px 6px;font-weight:600}
+.lg.on{background:var(--bolt);color:var(--on-txt);border-color:var(--bolt)}
+.lg.on:hover{color:var(--on-txt)}
 .hbtn{padding:7px 9px;font-size:14px;line-height:1;min-width:32px}
 .hbtn:disabled{opacity:.3;cursor:default;border-color:var(--line);color:var(--dim)}
 .hbtn:disabled:hover{border-color:var(--line);color:var(--dim)}
-@media (pointer:coarse){.hbtn{min-width:40px;padding:9px 10px}}
+@media (pointer:coarse){.hbtn{min-width:40px;padding:9px 10px}.lg{min-width:36px;padding:9px 6px}}
 #layerList{flex:1;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
 .layer{border:1px solid var(--line);border-radius:4px;margin-bottom:8px;background:var(--panel2)}
 .layer.sel{border-color:var(--bolt);box-shadow:0 0 0 1px rgba(127,220,255,.25)}
@@ -156,6 +161,8 @@ aside{overscroll-behavior:contain}
   header .lbl{display:none}
   header button{padding:7px 9px}
 }
+@media (max-width:820px){#logo{height:24px}}
+@media (max-width:520px){#logo{height:22px}}
 @media (max-width:430px){.brand{display:none}}
 /* Telephone en paysage : la barre d'outils mange toute la hauteur utile */
 @media (max-height:460px){
@@ -169,71 +176,84 @@ aside{overscroll-behavior:contain}
 <body>
 <div id="app">
   <header>
-    <button id="btnPanel" title="Calques">☰</button>
+    <button id="btnPanel" data-i18n-title="ui.layers">☰</button>
+    <img id="logo" src="data:image/png;base64,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" alt="Stormstack" width="69" height="72">
     <div class="brand">STORM<b>STACK</b></div>
-    <button id="btnImport">+<span class="lbl"> Importer</span></button>
-    <button id="btnLighten" title="Passe tous les calques au-dessus du fond en Éclaircir">⚡</button>
+    <button id="btnImport">+<span class="lbl" data-i18n="ui.import"> Import</span></button>
+    <button id="btnLighten" data-i18n-title="ui.lightenAll">⚡</button>
     <span class="hgrp">
-      <button id="btnUndo" class="hbtn" title="Annuler (Ctrl+Z)" disabled>↶</button>
-      <button id="btnRedo" class="hbtn" title="Rétablir (Ctrl+Maj+Z)" disabled>↷</button>
+      <button id="btnUndo" class="hbtn" data-i18n-title="ui.undo" disabled>↶</button>
+      <button id="btnRedo" class="hbtn" data-i18n-title="ui.redo" disabled>↷</button>
     </span>
     <div class="spacer"></div>
-    <span class="hint">V déplacer · E gomme · R restaurer · [ ] taille · Ctrl+Z</span>
-    <button id="btnExport"><span class="lbl">Exporter </span>PNG</button>
+    <span class="hint" data-i18n="ui.hint">V move · E erase · R restore · [ ] size · Ctrl+Z</span>
+    <span class="hgrp lang" role="group" data-i18n-label="ui.language">
+      <button id="langEn" class="hbtn lg on" lang="en">EN</button>
+      <button id="langFr" class="hbtn lg" lang="fr">FR</button>
+    </span>
+    <button id="btnExport"><span class="lbl" data-i18n="ui.export">Export </span>PNG</button>
   </header>
 
   <aside id="panel">
     <div class="sec">
-      <h3>COMPOSITION</h3>
-      <div class="row"><label>Fond</label><select id="bg"><option value="black">Noir</option><option value="transparent">Transparent</option></select></div>
-      <div class="row"><label>Travail</label><select id="cap">
-        <option value="0">Auto (appareil)</option>
+      <h3 data-i18n="ui.composition">COMPOSITION</h3>
+      <div class="row"><label data-i18n="ui.background">Background</label><select id="bg">
+        <option value="black" data-i18n="ui.bgBlack">Black</option>
+        <option value="transparent" data-i18n="ui.bgTransparent">Transparent</option>
+      </select></div>
+      <div class="row"><label data-i18n="ui.working">Working</label><select id="cap">
+        <option value="0" data-i18n="ui.capAuto">Auto (device)</option>
         <option value="2048">2048 px</option>
         <option value="3000">3000 px</option>
         <option value="4096">4096 px</option>
         <option value="6000">6000 px</option>
-        <option value="99999">Pleine résolution</option>
+        <option value="99999" data-i18n="ui.capFull">Full resolution</option>
       </select></div>
-      <div class="row" style="gap:6px"><button id="btnCenter" style="flex:1">Centrer</button><button id="btnReset" style="flex:1">Reset transfo</button></div>
-      <div class="seclabel">TOUS LES CALQUES</div>
+      <div class="row" style="gap:6px">
+        <button id="btnCenter" style="flex:1" data-i18n="fit.center">Center</button>
+        <button id="btnReset" style="flex:1" data-i18n="ui.resetXform">Reset transform</button>
+      </div>
+      <div class="seclabel" data-i18n="ui.allLayers">ALL LAYERS</div>
       <div class="fits">
-        <button id="allContain" title="Chaque calque entier dans le document, centré">Contenir</button>
-        <button id="allCover" title="Chaque calque remplit le document, débord rogné">Couvrir</button>
-        <button id="allWidth" title="Chaque calque à la largeur du document">Largeur</button>
-        <button id="allHeight" title="Chaque calque à la hauteur du document">Hauteur</button>
-        <button id="allOne" title="Échelle 100 %, centré">1:1</button>
+        <button id="allContain" data-i18n="fit.contain" data-i18n-title="fitAll.contain">Contain</button>
+        <button id="allCover" data-i18n="fit.cover" data-i18n-title="fitAll.cover">Cover</button>
+        <button id="allWidth" data-i18n="fit.w" data-i18n-title="fitAll.w">Width</button>
+        <button id="allHeight" data-i18n="fit.h" data-i18n-title="fitAll.h">Height</button>
+        <button id="allOne" data-i18n="fit.one" data-i18n-title="fitAll.one">1:1</button>
       </div>
     </div>
-    <div id="layerList"><div class="empty">Aucune image.<br>Glisse tes photos<br>ou clique <b>+ Importer</b>.</div></div>
+    <div id="layerList"><div class="empty" data-i18n-html="ui.empty">No image yet.<br>Drop your photos<br>or click <b>+ Import</b>.</div></div>
   </aside>
 
   <main>
     <div id="tools">
       <div class="grp">
-        <button id="tMove" class="on" title="V">Déplacer</button>
-        <button id="tErase" title="E">Gomme</button>
-        <button id="tRestore" title="R">Restaurer</button>
+        <button id="tMove" class="on" title="V" data-i18n="tool.move">Move</button>
+        <button id="tErase" title="E" data-i18n="tool.erase">Erase</button>
+        <button id="tRestore" title="R" data-i18n="tool.restore">Restore</button>
       </div>
       <div class="sep"></div>
-      <div class="grp"><span style="color:var(--dim)">Taille</span><input class="mini" type="range" id="bSize" min="2" max="800" value="120"><span class="val" id="bSizeV">120</span></div>
-      <div class="grp"><span style="color:var(--dim)">Dureté</span><input class="mini" type="range" id="bHard" min="0" max="100" value="35"><span class="val" id="bHardV">35%</span></div>
-      <div class="grp"><span style="color:var(--dim)">Flux</span><input class="mini" type="range" id="bFlow" min="2" max="100" value="70"><span class="val" id="bFlowV">70%</span></div>
+      <div class="grp"><span style="color:var(--dim)" data-i18n="brush.size">Size</span><input class="mini" type="range" id="bSize" min="2" max="800" value="120" data-i18n-label="brush.size"><span class="val" id="bSizeV">120</span></div>
+      <div class="grp"><span style="color:var(--dim)" data-i18n="brush.hardness">Hardness</span><input class="mini" type="range" id="bHard" min="0" max="100" value="35" data-i18n-label="brush.hardness"><span class="val" id="bHardV">35%</span></div>
+      <div class="grp"><span style="color:var(--dim)" data-i18n="brush.flow">Flow</span><input class="mini" type="range" id="bFlow" min="2" max="100" value="70" data-i18n-label="brush.flow"><span class="val" id="bFlowV">70%</span></div>
       <div class="sep"></div>
-      <button id="btnMaskAll" title="Masque tout le calque actif, puis restaure les éclairs">Tout masquer</button>
-      <button id="btnMaskClear">Effacer masque</button>
+      <button id="btnMaskAll" data-i18n="ui.maskAll" data-i18n-title="ui.maskAllTitle">Mask all</button>
+      <button id="btnMaskClear" data-i18n="ui.maskClear">Clear mask</button>
       <div class="sep"></div>
-      <button id="btnFit">Ajuster</button>
+      <button id="btnSnap" class="on" data-i18n="ui.snap" data-i18n-title="ui.snapTitle">Snap</button>
+      <div class="sep"></div>
+      <button id="btnFit" data-i18n="ui.fitView">Fit</button>
       <button id="btnZoom1">100%</button>
     </div>
     <div id="stage">
       <canvas id="view"></canvas>
-      <div id="drop"><b>STORMSTACK</b><span>Glisse tes photos ici, ou « + Importer »</span></div>
-      <div id="msg"></div>
+      <div id="drop"><b>STORMSTACK</b><span data-i18n="ui.dropHere">Drop your photos here, or use + Import</span></div>
+      <div id="msg" role="status" aria-live="polite"></div>
       <div id="status">
-        <span>Doc <b id="sDoc">-</b></span>
-        <span>Zoom <b id="sZoom">-</b></span>
-        <span>Calque <b id="sLayer">-</b></span>
-        <span id="sTip" style="margin-left:auto">Molette/pincer = zoom · 2 doigts, espace ou clic droit = pan</span>
+        <span data-i18n-pre="ui.doc">Doc <b id="sDoc">-</b></span>
+        <span data-i18n-pre="ui.zoom">Zoom <b id="sZoom">-</b></span>
+        <span data-i18n-pre="ui.layer">Layer <b id="sLayer">-</b></span>
+        <span id="sTip" style="margin-left:auto">Wheel/pinch = zoom · two fingers, space or right click = pan</span>
       </div>
     </div>
   </main>
@@ -251,8 +271,7 @@ aside{overscroll-behavior:contain}
 ----------------------------------------------------------------*/
 
 const BLENDS=['lighten','screen','normal','lighter','difference','multiply','overlay','soft-light','hard-light','color-dodge','darken','exclusion'];
-const BLEND_LABEL={normal:'Normal',lighten:'Éclaircir ⚡',screen:'Screen',lighter:'Addition',difference:'Différence',multiply:'Produit',overlay:'Incrustation',
- 'soft-light':'Lumière tamisée','hard-light':'Lumière crue','color-dodge':'Densité couleur -',darken:'Obscurcir',exclusion:'Exclusion'};
+const blendLabel=b=>t('blend.'+b);
 
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const IS_MOBILE = IS_IOS || matchMedia('(pointer:coarse)').matches;
@@ -269,13 +288,157 @@ const view=document.getElementById('view'), vctx=view.getContext('2d');
 const $=id=>document.getElementById(id);
 const stage=$('stage');
 
+/* ---------------- i18n ----------------
+   Anglais par defaut, francais en second. Aucune chaine visible n'est
+   ecrite en dur ailleurs : le markup porte des cles data-i18n, le code
+   appelle t(). Le choix est retenu dans localStorage.
+   Pluriel : cles suffixees _one / _other, {n} interpole.               */
+const I18N={
+ en:{
+  'ui.language':'Language','ui.layers':'Layers','ui.import':' Import','ui.export':'Export ',
+  'ui.lightenAll':'Set every layer above the base to Lighten',
+  'ui.undo':'Undo (Ctrl+Z)','ui.redo':'Redo (Ctrl+Shift+Z)',
+  'ui.hint':'V move · E erase · R restore · [ ] size · Ctrl+Z',
+  'ui.composition':'COMPOSITION','ui.background':'Background','ui.bgBlack':'Black','ui.bgTransparent':'Transparent',
+  'ui.working':'Working','ui.capAuto':'Auto (device)','ui.capFull':'Full resolution',
+  'ui.resetXform':'Reset transform','ui.allLayers':'ALL LAYERS',
+  'ui.empty':'No image yet.<br>Drop your photos<br>or click <b>+ Import</b>.',
+  'ui.maskAll':'Mask all','ui.maskAllTitle':'Mask the active layer entirely, then restore the bolts',
+  'ui.maskClear':'Clear mask','ui.fitView':'Fit',
+  'ui.dropHere':'Drop your photos here, or use + Import',
+  'ui.doc':'Doc','ui.zoom':'Zoom','ui.layer':'Layer','ui.none':'-',
+  'ui.tipDesktop':'Wheel/pinch = zoom · two fingers, space or right click = pan',
+  'ui.tipMobile':'Two fingers = zoom and pan · one finger = active tool',
+  'ui.blend':'Blend','ui.fitLayer':'FIT THIS LAYER','ui.snap':'Snap',
+  'ui.snapTitle':'Snap to document edges, centres and other layers. Hold Alt to suspend.',
+  'ui.toggleVisible':'Show / hide','ui.moveUp':'Move up','ui.moveDown':'Move down','ui.delete':'Delete',
+  'tool.move':'Move','tool.erase':'Erase','tool.restore':'Restore',
+  'brush.size':'Size','brush.hardness':'Hardness','brush.flow':'Flow',
+  'prop.opacity':'Opacity','prop.scale':'Scale','prop.x':'X','prop.y':'Y',
+  'fit.contain':'Contain','fit.cover':'Cover','fit.w':'Width','fit.h':'Height','fit.one':'1:1','fit.center':'Center',
+  'fitTitle.contain':'Whole layer inside the document, centred',
+  'fitTitle.cover':'Layer fills the document, overflow cropped',
+  'fitTitle.w':'Scaled to the document width','fitTitle.h':'Scaled to the document height',
+  'fitTitle.one':'Scale 100 %, centred','fitTitle.center':'Recentre without changing scale',
+  'fitAll.contain':'Every layer inside the document, centred',
+  'fitAll.cover':'Every layer fills the document, overflow cropped',
+  'fitAll.w':'Every layer scaled to the document width','fitAll.h':'Every layer scaled to the document height',
+  'fitAll.one':'Scale 100 %, centred',
+  'blend.normal':'Normal','blend.lighten':'Lighten ⚡','blend.screen':'Screen','blend.lighter':'Add',
+  'blend.difference':'Difference','blend.multiply':'Multiply','blend.overlay':'Overlay',
+  'blend.soft-light':'Soft light','blend.hard-light':'Hard light','blend.color-dodge':'Color dodge',
+  'blend.darken':'Darken','blend.exclusion':'Exclusion',
+  'msg.importing':'Importing…',
+  'msg.imported_one':'{n} image imported','msg.imported_other':'{n} images imported',
+  'msg.noImage':'No recognised image file: {list}<br>Accepted: JPEG, PNG, WebP, AVIF, TIFF, GIF, BMP.',
+  'msg.noFile':'No file received. Drop image <b>files</b>, not a folder.',
+  'msg.heic':'HEIC cannot be decoded by this browser: {list}<br>Convert them to JPEG, or on iPhone: Settings → Camera → Formats → <b>Most Compatible</b>.',
+  'msg.unread':'Could not read: {list}<br>See the console for details.',
+  'msg.skipped':'Skipped: {list}',
+  'msg.capApplied':'Working resolution applies to the <b>next</b> imports.',
+  'msg.allLighten':'Every layer above the base set to <b>Lighten</b>',
+  'msg.exportFail':'Export failed (memory). Lower the working resolution.',
+  'msg.iosExport':'On iOS: open the image then <b>Share → Save to Photos</b>.',
+  'msg.renderError':'Render error: {e}','msg.error':'Error: {e}'
+ },
+ fr:{
+  'ui.language':'Langue','ui.layers':'Calques','ui.import':' Importer','ui.export':'Exporter ',
+  'ui.lightenAll':'Passe tous les calques au-dessus du fond en Éclaircir',
+  'ui.undo':'Annuler (Ctrl+Z)','ui.redo':'Rétablir (Ctrl+Maj+Z)',
+  'ui.hint':'V déplacer · E gomme · R restaurer · [ ] taille · Ctrl+Z',
+  'ui.composition':'COMPOSITION','ui.background':'Fond','ui.bgBlack':'Noir','ui.bgTransparent':'Transparent',
+  'ui.working':'Travail','ui.capAuto':'Auto (appareil)','ui.capFull':'Pleine résolution',
+  'ui.resetXform':'Reset transfo','ui.allLayers':'TOUS LES CALQUES',
+  'ui.empty':'Aucune image.<br>Glisse tes photos<br>ou clique <b>+ Importer</b>.',
+  'ui.maskAll':'Tout masquer','ui.maskAllTitle':'Masque tout le calque actif, puis restaure les éclairs',
+  'ui.maskClear':'Effacer masque','ui.fitView':'Ajuster',
+  'ui.dropHere':'Glisse tes photos ici, ou « + Importer »',
+  'ui.doc':'Doc','ui.zoom':'Zoom','ui.layer':'Calque','ui.none':'-',
+  'ui.tipDesktop':'Molette/pincer = zoom · 2 doigts, espace ou clic droit = pan',
+  'ui.tipMobile':'2 doigts = zoom/pan · 1 doigt = outil actif',
+  'ui.blend':'Fusion','ui.fitLayer':'AJUSTER CE CALQUE','ui.snap':'Aimant',
+  'ui.snapTitle':'Aimante aux bords, aux centres et aux autres calques. Alt suspend l\u2019aimantation.',
+  'ui.toggleVisible':'Afficher / masquer','ui.moveUp':'Monter','ui.moveDown':'Descendre','ui.delete':'Supprimer',
+  'tool.move':'Déplacer','tool.erase':'Gomme','tool.restore':'Restaurer',
+  'brush.size':'Taille','brush.hardness':'Dureté','brush.flow':'Flux',
+  'prop.opacity':'Opacité','prop.scale':'Échelle','prop.x':'X','prop.y':'Y',
+  'fit.contain':'Contenir','fit.cover':'Couvrir','fit.w':'Largeur','fit.h':'Hauteur','fit.one':'1:1','fit.center':'Centrer',
+  'fitTitle.contain':'Le calque entier dans le document, centré',
+  'fitTitle.cover':'Le calque remplit le document, débord rogné',
+  'fitTitle.w':'Mise à la largeur du document','fitTitle.h':'Mise à la hauteur du document',
+  'fitTitle.one':'Échelle 100 %, centré','fitTitle.center':'Recentre sans changer l’échelle',
+  'fitAll.contain':'Chaque calque entier dans le document, centré',
+  'fitAll.cover':'Chaque calque remplit le document, débord rogné',
+  'fitAll.w':'Chaque calque à la largeur du document','fitAll.h':'Chaque calque à la hauteur du document',
+  'fitAll.one':'Échelle 100 %, centré',
+  'blend.normal':'Normal','blend.lighten':'Éclaircir ⚡','blend.screen':'Screen','blend.lighter':'Addition',
+  'blend.difference':'Différence','blend.multiply':'Produit','blend.overlay':'Incrustation',
+  'blend.soft-light':'Lumière tamisée','blend.hard-light':'Lumière crue','blend.color-dodge':'Densité couleur -',
+  'blend.darken':'Obscurcir','blend.exclusion':'Exclusion',
+  'msg.importing':'Import en cours…',
+  'msg.imported_one':'{n} image importée','msg.imported_other':'{n} images importées',
+  'msg.noImage':'Aucun fichier image reconnu : {list}<br>Formats acceptés : JPEG, PNG, WebP, AVIF, TIFF, GIF, BMP.',
+  'msg.noFile':'Aucun fichier reçu. Glisse des <b>fichiers</b> image, pas un dossier.',
+  'msg.heic':'HEIC non décodable par ce navigateur : {list}<br>Convertis-les en JPEG, ou sur iPhone : Réglages → Appareil photo → Formats → <b>Plus compatible</b>.',
+  'msg.unread':'Non lu : {list}<br>Voir la console pour le détail.',
+  'msg.skipped':'Ignoré : {list}',
+  'msg.capApplied':'Résolution de travail appliquée aux <b>prochains</b> imports.',
+  'msg.allLighten':'Tous les calques supérieurs en <b>Éclaircir</b>',
+  'msg.exportFail':'Export impossible (mémoire). Réduis la résolution de travail.',
+  'msg.iosExport':'Sur iOS : ouvre l’image puis <b>Partager → Enregistrer dans Photos</b>.',
+  'msg.renderError':'Erreur de rendu : {e}','msg.error':'Erreur : {e}'
+ }
+};
+const LANGS=['en','fr'];
+let LANG='en';
+try{const st=localStorage.getItem('stormstack.lang');if(LANGS.indexOf(st)>=0)LANG=st;}catch(e){}
+
+function t(key,p){
+  const dict=I18N[LANG]||I18N.en;
+  let k=key;
+  if(p&&typeof p.n==='number'){
+    const alt=key+(p.n===1?'_one':'_other');
+    if(dict[alt]!==undefined||I18N.en[alt]!==undefined)k=alt;
+  }
+  let s=dict[k];
+  if(s===undefined)s=I18N.en[k];
+  if(s===undefined)return key;
+  if(p)s=s.replace(/\{(\w+)\}/g,(m,n)=>p[n]!==undefined?p[n]:m);
+  return s;
+}
+function applyI18n(){
+  document.documentElement.lang=LANG;
+  document.title='STORMSTACK · '+(LANG==='fr'?'stacking d’orages':'storm stacking');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{el.innerHTML=t(el.dataset.i18nHtml);});
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{el.title=t(el.dataset.i18nTitle);});
+  document.querySelectorAll('[data-i18n-label]').forEach(el=>{el.setAttribute('aria-label',t(el.dataset.i18nLabel));});
+  // Libelles de la barre d'etat : texte avant la valeur, valeur preservee.
+  document.querySelectorAll('[data-i18n-pre]').forEach(el=>{
+    if(el.firstChild&&el.firstChild.nodeType===3)el.firstChild.nodeValue=t(el.dataset.i18nPre)+' ';
+  });
+  $('sTip').textContent=t(IS_MOBILE?'ui.tipMobile':'ui.tipDesktop');
+  LANGS.forEach(l=>$('lang'+l[0].toUpperCase()+l.slice(1)).classList.toggle('on',l===LANG));
+  if(S.layers.length)buildList();
+  else{const e=document.querySelector('#layerList .empty');if(e)e.innerHTML=t('ui.empty');
+       $('sLayer').textContent=t('ui.none');}
+}
+function setLang(l){
+  if(LANGS.indexOf(l)<0||l===LANG)return;
+  LANG=l;
+  try{localStorage.setItem('stormstack.lang',l);}catch(e){}
+  applyI18n();
+}
+$('langEn').onclick=()=>setLang('en');
+$('langFr').onclick=()=>setLang('fr');
+
 /* ---------------- messages ---------------- */
 let msgT=null;
 function say(txt,ms=6000){const m=$('msg');m.innerHTML=txt;m.style.display='block';
   clearTimeout(msgT);msgT=setTimeout(()=>m.style.display='none',ms);}
 // Sans ça, la moindre erreur laisse une page morte sans explication.
-addEventListener('error',e=>{say('Erreur : '+esc(String(e.message||e.type)),10000);});
-addEventListener('unhandledrejection',e=>{say('Erreur : '+esc(String(e.reason&&e.reason.message||e.reason)),10000);});
+addEventListener('error',e=>{say(t('msg.error',{e:esc(String(e.message||e.type))}),10000);});
+addEventListener('unhandledrejection',e=>{say(t('msg.error',{e:esc(String(e.reason&&e.reason.message||e.reason))}),10000);});
 
 /* ---------------- décodage robuste (iOS / HEIC / gros fichiers) ---------------- */
 async function decodeFile(file){
@@ -351,14 +514,12 @@ async function addFiles(files){
   const keep=all.filter(f=>(f.type||'').startsWith('image/')||IMG_EXT.test(f.name));
   const skipped=all.filter(f=>keep.indexOf(f)<0).map(f=>f.name||'(sans nom)');
   if(!keep.length){
-    say(all.length
-      ? 'Aucun fichier image reconnu : '+esc(skipped.join(', '))+'<br>Formats acceptés : JPEG, PNG, WebP, AVIF, TIFF, GIF, BMP.'
-      : 'Aucun fichier reçu. Glisse des <b>fichiers</b> image, pas un dossier.',10000);
+    say(all.length?t('msg.noImage',{list:esc(skipped.join(', '))}):t('msg.noFile'),10000);
     return;
   }
   keep.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
   const fails=[],heic=[];
-  say('Import en cours…',60000);
+  say(t('msg.importing'),60000);
   for(const f of keep){
     try{ await addImage(f); }
     catch(err){ console.error(f.name,err); (err&&err.heic?heic:fails).push(f.name); }
@@ -368,11 +529,10 @@ async function addFiles(files){
   fitView();
   const done=keep.length-fails.length-heic.length;
   const parts=[];
-  if(done)parts.push(done+' image(s) importée(s)');
-  if(heic.length)parts.push('HEIC non décodable par ce navigateur : '+esc(heic.join(', '))
-    +'<br>Convertis-les en JPEG, ou sur iPhone : Réglages → Appareil photo → Formats → <b>Plus compatible</b>.');
-  if(fails.length)parts.push('Non lu : '+esc(fails.join(', '))+'<br>Voir la console pour le détail.');
-  if(skipped.length)parts.push('Ignoré : '+esc(skipped.join(', ')));
+  if(done)parts.push(t('msg.imported',{n:done}));
+  if(heic.length)parts.push(t('msg.heic',{list:esc(heic.join(', '))}));
+  if(fails.length)parts.push(t('msg.unread',{list:esc(fails.join(', '))}));
+  if(skipped.length)parts.push(t('msg.skipped',{list:esc(skipped.join(', '))}));
   say(parts.join('<br>'), (fails.length||heic.length||skipped.length)?12000:2500);
 }
 
@@ -409,8 +569,7 @@ function resizeDoc(){
   comp.width=tmp.width=S.doc.w; comp.height=tmp.height=S.doc.h;
   $('sDoc').textContent=S.doc.w+'×'+S.doc.h;
 }
-$('cap').onchange=e=>{S.cap=parseInt(e.target.value,10)||0;
-  say('Résolution de travail appliquée aux <b>prochains</b> imports.',4000);};
+$('cap').onchange=e=>{S.cap=parseInt(e.target.value,10)||0;say(t('msg.capApplied'),4000);};
 
 /* ---------------- historique annuler / rétablir ----------------
    Entrées typées plutôt qu'un instantané global : un masque pèse
@@ -467,34 +626,36 @@ function maskCommit(){if(!maskPend)return;const L=maskPend.L,a=maskPend.a;maskPe
    plage du curseur. L'UI (curseur, champ, pas fin) en est déduite.        */
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const PROPS={
-  op:{label:'Opacité',unit:'%',step:1,fine:[1,10],
+  op:{label:'prop.opacity',unit:'%',step:1,fine:[1,10],
       get:L=>Math.round(L.opacity*100),
       set:(L,v)=>{L.opacity=clamp(v,0,100)/100;},
       range:()=>[0,100]},
-  sc:{label:'Échelle',unit:'%',step:.1,fine:[.1,1],
+  sc:{label:'prop.scale',unit:'%',step:.1,fine:[.1,1],
       get:L=>+(L.scale*100).toFixed(2),
       // Le redimensionnement depuis le panneau garde le centre du calque en place.
       set:(L,v)=>{const ns=clamp(v,1,2000)/100,cx=L.x+L.sw*L.scale/2,cy=L.y+L.sh*L.scale/2;
                   L.scale=ns;L.x=cx-L.sw*ns/2;L.y=cy-L.sh*ns/2;},
       range:L=>[1,Math.max(400,Math.ceil(L.scale*2)*50)]},
-  px:{label:'X',unit:'px',step:1,fine:[1,10],
+  px:{label:'prop.x',unit:'px',step:1,fine:[1,10],
       get:L=>Math.round(L.x),set:(L,v)=>{L.x=v;},
       range:L=>{const r=Math.round(Math.max(S.doc.w,Math.abs(L.x)+200));return[-r,r];}},
-  py:{label:'Y',unit:'px',step:1,fine:[1,10],
+  py:{label:'prop.y',unit:'px',step:1,fine:[1,10],
       get:L=>Math.round(L.y),set:(L,v)=>{L.y=v;},
       range:L=>{const r=Math.round(Math.max(S.doc.h,Math.abs(L.y)+200));return[-r,r];}}
 };
-function propHTML(L,t){
-  const p=PROPS[t],mm=p.range(L),v=p.get(L),f1=p.fine[0],f2=p.fine[1];
+// key : identifiant de propriete. Surtout pas nomme t, qui masquerait la
+// fonction de traduction dans cette portee.
+function propHTML(L,key){
+  const p=PROPS[key],mm=p.range(L),v=p.get(L),f1=p.fine[0],f2=p.fine[1];
   return '<div class="prop">'
-    +'<div class="phead"><label>'+p.label+'</label><span class="nudge">'
-    +'<button class="stp wide" data-t="'+t+'" data-d="'+(-f2)+'" tabindex="-1">−'+f2+'</button>'
-    +'<button class="stp" data-t="'+t+'" data-d="'+(-f1)+'" tabindex="-1">−</button>'
-    +'<input type="number" class="num n_'+t+'" value="'+v+'" step="'+p.step+'" inputmode="decimal">'
-    +'<button class="stp" data-t="'+t+'" data-d="'+f1+'" tabindex="-1">+</button>'
-    +'<button class="stp wide" data-t="'+t+'" data-d="'+f2+'" tabindex="-1">+'+f2+'</button>'
+    +'<div class="phead"><label>'+t(p.label)+'</label><span class="nudge">'
+    +'<button class="stp wide" data-t="'+key+'" data-d="'+(-f2)+'" tabindex="-1">−'+f2+'</button>'
+    +'<button class="stp" data-t="'+key+'" data-d="'+(-f1)+'" tabindex="-1">−</button>'
+    +'<input type="number" class="num n_'+key+'" value="'+v+'" step="'+p.step+'" inputmode="decimal">'
+    +'<button class="stp" data-t="'+key+'" data-d="'+f1+'" tabindex="-1">+</button>'
+    +'<button class="stp wide" data-t="'+key+'" data-d="'+f2+'" tabindex="-1">+'+f2+'</button>'
     +'</span><span class="unit">'+p.unit+'</span></div>'
-    +'<input type="range" class="rng r_'+t+'" min="'+mm[0]+'" max="'+mm[1]+'" step="'+p.step+'" value="'+v+'">'
+    +'<input type="range" class="rng r_'+key+'" min="'+mm[0]+'" max="'+mm[1]+'" step="'+p.step+'" value="'+v+'">'
     +'</div>';
 }
 // Recale les champs du calque sélectionné sans reconstruire la liste,
@@ -533,36 +694,31 @@ function fitAll(mode){
   if(list.length)histPush({k:'multi',list});
   buildList();S.dirty=true;
 }
-const FITS=[['contain','Contenir','Le calque entier dans le document, centré'],
-            ['cover','Couvrir','Le calque remplit le document, débord rogné'],
-            ['w','Largeur','Mise à la largeur du document'],
-            ['h','Hauteur','Mise à la hauteur du document'],
-            ['one','1:1','Échelle 100 %, centré'],
-            ['center','Centrer','Recentre sans changer l échelle']];
+const FITS=['contain','cover','w','h','one','center'];
 
 /* ---------------- panneau calques ---------------- */
 function buildList(){
   const el=$('layerList');
-  if(!S.layers.length){el.innerHTML='<div class="empty">Aucune image.<br>Glisse tes photos<br>ou clique <b>+ Importer</b>.</div>';$('sLayer').textContent='-';histUI();return;}
+  if(!S.layers.length){el.innerHTML='<div class="empty">'+t('ui.empty')+'</div>';$('sLayer').textContent=t('ui.none');histUI();return;}
   el.innerHTML='';
   [...S.layers].reverse().forEach(L=>{
     const d=document.createElement('div');
     d.className='layer'+(L.id===S.sel?' sel':'')+(L.visible?'':' off');
     d.innerHTML='<div class="lhead">'
-      +'<button class="icn eye" title="Afficher / masquer">'+(L.visible?'◉':'○')+'</button>'
+      +'<button class="icn eye" title="'+esc(t('ui.toggleVisible'))+'">'+(L.visible?'◉':'○')+'</button>'
       +'<span class="thumb"></span>'
       +'<span class="lname">'+esc(L.name)+'</span>'
-      +'<button class="icn up" title="Monter">▲</button>'
-      +'<button class="icn dn" title="Descendre">▼</button>'
-      +'<button class="icn del" title="Supprimer">✕</button>'
+      +'<button class="icn up" title="'+esc(t('ui.moveUp'))+'">▲</button>'
+      +'<button class="icn dn" title="'+esc(t('ui.moveDown'))+'">▼</button>'
+      +'<button class="icn del" title="'+esc(t('ui.delete'))+'">✕</button>'
       +'</div>'
       +'<div class="lbody">'
-      +'<div class="row"><label>Fusion</label><select class="blend">'
-      +BLENDS.map(b=>'<option value="'+b+'"'+(b===L.blend?' selected':'')+'>'+BLEND_LABEL[b]+'</option>').join('')
+      +'<div class="row"><label>'+t('ui.blend')+'</label><select class="blend">'
+      +BLENDS.map(b=>'<option value="'+b+'"'+(b===L.blend?' selected':'')+'>'+esc(blendLabel(b))+'</option>').join('')
       +'</select></div>'
       +propHTML(L,'op')+propHTML(L,'sc')+propHTML(L,'px')+propHTML(L,'py')
-      +'<div class="seclabel">AJUSTER CE CALQUE</div>'
-      +'<div class="fits">'+FITS.map(f=>'<button data-fit="'+f[0]+'" title="'+esc(f[2])+'">'+f[1]+'</button>').join('')+'</div>'
+      +'<div class="seclabel">'+t('ui.fitLayer')+'</div>'
+      +'<div class="fits">'+FITS.map(f=>'<button data-fit="'+f+'" title="'+esc(t('fitTitle.'+f))+'">'+esc(t('fit.'+f))+'</button>').join('')+'</div>'
       +'</div>';
     d.querySelector('.thumb').appendChild(cloneCanvas(L.thumb));
     d.querySelector('.lhead').onclick=e=>{if(e.target.closest('.icn'))return;S.sel=L.id;buildList();S.dirty=true;};
@@ -595,7 +751,7 @@ function buildList(){
     body.querySelectorAll('[data-fit]').forEach(b=>{b.onclick=()=>fitLayer(L,b.dataset.fit);});
     el.appendChild(d);
   });
-  const s=sel();$('sLayer').textContent=s?s.name:'-';
+  const s=sel();$('sLayer').textContent=s?s.name:t('ui.none');
   histUI();
 }
 function cloneCanvas(c){const n=document.createElement('canvas');n.width=c.width;n.height=c.height;n.getContext('2d').drawImage(c,0,0);return n;}
@@ -606,6 +762,80 @@ function moveLayer(L,d){const i=S.layers.indexOf(L),j=i+d;if(j<0||j>=S.layers.le
   histPush({k:'ord',a,b:S.layers.slice()});
   buildList();S.dirty=true;}
 function sel(){return S.layers.find(l=>l.id===S.sel)||null;}
+
+/* ---------------- aimantation ----------------
+   Cibles : bords et centre du document, bords et centres des autres
+   calques visibles. La tolerance est fixee en pixels ecran puis
+   convertie en unites document, donc elle ne varie pas avec le zoom.
+   Alt enfoncee suspend l'aimantation. Les reperes actifs sont dessines
+   le temps du geste.                                                  */
+const SNAP={on:true,px:7};
+let guides={x:[],y:[]};
+let altKey=false;
+addEventListener('keydown',e=>{if(e.altKey)altKey=true;});
+addEventListener('keyup',e=>{if(!e.altKey)altKey=false;});
+addEventListener('blur',()=>{altKey=false;});
+
+// Cibles sur un axe. skip = calque en cours de manipulation, exclu de ses
+// propres cibles.
+function snapTargets(axis,skip){
+  const span=axis==='x'?S.doc.w:S.doc.h;
+  const out=[0,span/2,span];
+  for(const L of S.layers){
+    if(L===skip||!L.visible)continue;
+    const a=axis==='x'?L.x:L.y,len=(axis==='x'?L.sw:L.sh)*L.scale;
+    out.push(a,a+len/2,a+len);
+  }
+  return out;
+}
+// refs : points du calque a confronter aux cibles, en unites document.
+// Renvoie le decalage a appliquer, et la cible retenue.
+function snapAxis(axis,refs,skip){
+  if(!SNAP.on||altKey)return null;
+  const tol=SNAP.px/S.view.z;
+  let best=null;
+  for(const target of snapTargets(axis,skip)){
+    for(const r of refs){
+      const d=target-r;
+      if(Math.abs(d)<=tol&&(!best||Math.abs(d)<Math.abs(best.d)))best={d,target};
+    }
+  }
+  return best;
+}
+function snapMove(L,x,y){
+  const w=L.sw*L.scale,h=L.sh*L.scale;
+  guides={x:[],y:[]};
+  const sx=snapAxis('x',[x,x+w/2,x+w],L);
+  const sy=snapAxis('y',[y,y+h/2,y+h],L);
+  if(sx){x+=sx.d;guides.x.push(sx.target);}
+  if(sy){y+=sy.d;guides.y.push(sy.target);}
+  return{x,y};
+}
+// Redimensionnement : l'ancre ne bouge pas, seul le coin tire est aimante.
+// L'echelle restant uniforme, un seul axe peut coller a la fois : on garde
+// celui qui deplace le coin le moins loin.
+function snapScale(L,s,c,ax,ay){
+  if(!SNAP.on||altKey)return{s,gx:null,gy:null};
+  const tol=SNAP.px/S.view.z;
+  const sgx=c[0]?1:-1,sgy=c[1]?1:-1;
+  const cx=ax+sgx*L.sw*s,cy=ay+sgy*L.sh*s;
+  let best=null;
+  const consider=(cand,axis,target)=>{
+    if(!isFinite(cand)||cand<=.01||cand>20)return;
+    const dist=Math.abs((axis==='x'?L.sw:L.sh)*(cand-s));
+    if(dist<=tol&&(!best||dist<best.dist))best={s:cand,axis,target,dist};
+  };
+  for(const target of snapTargets('x',L))consider((target-ax)*sgx/L.sw,'x',target);
+  for(const target of snapTargets('y',L))consider((target-ay)*sgy/L.sh,'y',target);
+  // Echelles remarquables : 100 %, contenir, couvrir, largeur, hauteur.
+  const rw=S.doc.w/L.sw,rh=S.doc.h/L.sh;
+  for(const cand of [1,rw,rh,Math.min(rw,rh),Math.max(rw,rh)]){
+    const dist=Math.max(L.sw,L.sh)*Math.abs(cand-s);
+    if(dist<=tol&&(!best||dist<best.dist))best={s:cand,axis:null,target:null,dist};
+  }
+  if(!best)return{s,gx:null,gy:null};
+  return{s:best.s,gx:best.axis==='x'?best.target:null,gy:best.axis==='y'?best.target:null};
+}
 
 /* ---------------- poignées de transformation ----------------
    Ordre des coins : haut-gauche, haut-droite, bas-gauche, bas-droite. */
@@ -662,6 +892,14 @@ function render(){
   }
   vctx.imageSmoothingQuality='high';
   vctx.drawImage(comp,x,y,S.doc.w*z,S.doc.h*z);
+  // Reperes d'aimantation, sous le cadre pour rester lisibles.
+  if(guides.x.length||guides.y.length){
+    vctx.strokeStyle='rgba(255,107,94,.9)';vctx.lineWidth=1;vctx.setLineDash([]);
+    vctx.beginPath();
+    for(const gx of guides.x){const px=Math.round(x+gx*z)+.5;vctx.moveTo(px,0);vctx.lineTo(px,r.height);}
+    for(const gy of guides.y){const py=Math.round(y+gy*z)+.5;vctx.moveTo(0,py);vctx.lineTo(r.width,py);}
+    vctx.stroke();
+  }
   const L=sel();
   if(L&&S.tool==='move'){
     const b=box(L);
@@ -692,7 +930,7 @@ function loop(){
     if(S.dirty){compose();S.dirty=false;}
     render();
   }catch(e){
-    if(!loopErr){loopErr=true;console.error('rendu',e);say('Erreur de rendu : '+esc(String(e&&e.message||e)),8000);}
+    if(!loopErr){loopErr=true;console.error('rendu',e);say(t('msg.renderError',{e:esc(String(e&&e.message||e))}),8000);}
   }
   requestAnimationFrame(loop);
 }
@@ -703,6 +941,7 @@ function fitView(){
   const z=Math.min((r.width-40)/S.doc.w,(r.height-56)/S.doc.h);
   S.view={z,x:(r.width-S.doc.w*z)/2,y:(r.height-S.doc.h*z)/2};
 }
+$('btnSnap').onclick=()=>{SNAP.on=!SNAP.on;$('btnSnap').classList.toggle('on',SNAP.on);};
 $('btnFit').onclick=fitView;
 $('btnZoom1').onclick=()=>{const r=stage.getBoundingClientRect(),cx=r.width/2,cy=r.height/2;
   const dx=(cx-S.view.x)/S.view.z,dy=(cy-S.view.y)/S.view.z;S.view.z=1;S.view.x=cx-dx;S.view.y=cy-dy;};
@@ -755,6 +994,7 @@ addEventListener('keydown',e=>{
   if(k==='v')setTool('move');else if(k==='e')setTool('erase');else if(k==='r')setTool('restore');
   else if(e.key==='['||e.key===']'){const f=e.key==='['?1/1.25:1.25;
     S.brush.size=Math.min(800,Math.max(2,S.brush.size*f));$('bSize').value=S.brush.size;$('bSizeV').textContent=Math.round(S.brush.size);}
+  else if(k==='s'){SNAP.on=!SNAP.on;$('btnSnap').classList.toggle('on',SNAP.on);}
   else if(k==='f')fitView();
   else if(e.code==='Space'){e.preventDefault();panKey=true;view.style.cursor='grab';}
 });
@@ -797,7 +1037,11 @@ view.addEventListener('pointermove',e=>{
     return;
   }
   if(drag.t==='pan'){S.view.x=drag.ox+(sx-drag.sx);S.view.y=drag.oy+(sy-drag.sy);}
-  else if(drag.t==='move'){drag.L.x=drag.ox+(sx-drag.sx)/S.view.z;drag.L.y=drag.oy+(sy-drag.sy)/S.view.z;S.dirty=true;syncLayerUI(drag.L);}
+  else if(drag.t==='move'){
+    const L=drag.L;
+    const sn=snapMove(L,drag.ox+(sx-drag.sx)/S.view.z,drag.oy+(sy-drag.sy)/S.view.z);
+    L.x=sn.x;L.y=sn.y;S.dirty=true;syncLayerUI(L);
+  }
   else if(drag.t==='scale'){
     const L=drag.L,c=drag.c;
     const dx=(sx-S.view.x)/S.view.z,dy=(sy-S.view.y)/S.view.z;   // écran -> doc
@@ -805,7 +1049,10 @@ view.addEventListener('pointermove',e=>{
     // Échelle uniforme au sens des moindres carrés : suit la diagonale
     // sans saccade quand un seul axe bouge.
     let s=(wantW*L.sw+wantH*L.sh)/(L.sw*L.sw+L.sh*L.sh);
-    L.scale=Math.min(20,Math.max(.01,s));
+    s=Math.min(20,Math.max(.01,s));
+    const sn=snapScale(L,s,c,drag.ax,drag.ay);
+    guides={x:sn.gx===null?[]:[sn.gx],y:sn.gy===null?[]:[sn.gy]};
+    L.scale=sn.s;
     L.x=c[0]?drag.ax:drag.ax-L.sw*L.scale;
     L.y=c[1]?drag.ay:drag.ay-L.sh*L.scale;
     S.dirty=true;syncLayerUI(L);
@@ -818,7 +1065,7 @@ view.addEventListener('pointermove',e=>{
     if(drag.t==='move'||drag.t==='scale')xfCommit();
     else if(drag.t==='paint')maskCommit();
   }
-  drag=null;
+  drag=null;guides={x:[],y:[]};
   if(e.pointerType!=='mouse')S.cursor=null;
   if(S.tool==='move'&&e.pointerType==='mouse')view.style.cursor='move';
 }));
@@ -868,7 +1115,7 @@ $('btnLighten').onclick=()=>{
     const a=snapXf(L);L.blend='lighten';list.push({L,a,b:snapXf(L)});});
   if(list.length)histPush({k:'multi',list});
   buildList();S.dirty=true;
-  say('Tous les calques supérieurs en <b>Éclaircir</b>',2000);};
+  say(t('msg.allLighten'),2000);};
 $('btnCenter').onclick=()=>fitLayer(sel(),'center');
 $('btnReset').onclick=()=>{const L=sel();if(!L)return;
   xfDo(L,()=>{L.x=0;L.y=0;L.scale=1;L.opacity=1;});buildList();};
@@ -885,20 +1132,20 @@ $('btnExport').onclick=()=>{
   const name='stormstack_'+new Date().toISOString().slice(0,19).replace(/[:T-]/g,'')+'.png';
   if(comp.toBlob){
     comp.toBlob(b=>{
-      if(!b){say('Export impossible (mémoire). Réduis la résolution de travail.');return;}
+      if(!b){say(t('msg.exportFail'));return;}
       const url=URL.createObjectURL(b);
       const a=document.createElement('a');a.href=url;a.download=name;
       document.body.appendChild(a);a.click();a.remove();
-      if(IS_IOS)say('Sur iOS : ouvre l’image puis <b>Partager → Enregistrer dans Photos</b>.',7000);
+      if(IS_IOS)say(t('msg.iosExport'),7000);
       setTimeout(()=>URL.revokeObjectURL(url),8000);
     },'image/png');
   }else{const a=document.createElement('a');a.href=comp.toDataURL('image/png');a.download=name;a.click();}
 };
 
+applyI18n();
 setTool('move');
 histUI();
 loop();
-if(IS_MOBILE)$('sTip').textContent='2 doigts = zoom/pan · 1 doigt = outil actif';
 </script>
 </body>
 </html>

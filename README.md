@@ -5,98 +5,106 @@
 <h1 align="center">STORMSTACK</h1>
 
 <p align="center">
-  Empilement de photos d'orage dans le navigateur. Un seul fichier HTML, aucun serveur, aucun envoi.
+  Stack lightning photos in the browser. One HTML file, no server, nothing uploaded.
 </p>
 
 <p align="center">
-  <a href="https://infinition.github.io/stormstack/"><b>Ouvrir l'application</b></a>
+  <a href="https://infinition.github.io/stormstack/"><b>Open the app</b></a>
 </p>
 
 ---
 
-## Ce que ça fait
+## What it does
 
-Photographier un orage donne une rafale d'images presque identiques, chacune avec un ou deux éclairs.
-Stormstack les superpose et les fusionne en mode Éclaircir, ce qui ne retient que les pixels les plus
-clairs de chaque calque. Résultat : tous les éclairs de la séquence sur une seule image, sans toucher
-au ciel de fond.
+Shooting a thunderstorm gives you a burst of near identical frames, each with a bolt or two.
+Stormstack layers them and blends with Lighten, which keeps only the brightest pixel of each layer.
+The result is every bolt of the sequence on a single image, with the background sky untouched.
 
-Le masque de chaque calque se peint à la main, en coordonnées image, donc il suit le calque quand on
-le déplace ou le redimensionne.
+Each layer carries a mask you paint by hand. The mask lives in image coordinates, so it follows the
+layer when you move or scale it.
 
-Tout se passe dans l'onglet. Les photos ne quittent jamais la machine.
+Everything runs in the tab. Your photos never leave the machine.
 
-## Utilisation
+## Using it
 
-1. Glisse tes photos n'importe où sur la page, ou clique **+ Importer**.
-2. Le premier calque reste en Normal, les suivants passent en **Éclaircir**. Le bouton ⚡ force tous
-   les calques supérieurs dans ce mode.
-3. Aligne les calques : glisse l'image dans le canevas, tire une **poignée d'angle** pour l'échelle,
-   ou saisis les valeurs au pixel dans le panneau.
-4. **Gomme** pour effacer une zone du calque actif (un éclair parasite, un reflet), **Restaurer** pour
-   la ramener. Dureté et flux règlent le bord de la brosse.
-5. **Exporter PNG**.
+1. Drop your photos anywhere on the page, or click **+ Import**.
+2. The first layer stays Normal, the ones above switch to **Lighten**. The ⚡ button forces every
+   layer above the base into that mode.
+3. Align the layers: drag the image on the canvas, pull a **corner handle** to scale, or type exact
+   values in the panel.
+4. **Erase** removes an area of the active layer, a stray bolt or a reflection. **Restore** brings it
+   back. Hardness and flow shape the brush edge.
+5. **Export PNG**.
 
-### Ajustements
+### Snapping
 
-Par calque et pour l'ensemble : `Contenir`, `Couvrir`, `Largeur`, `Hauteur`, `1:1`, `Centrer`.
-Utile quand les photos ne sortent pas toutes du même boîtier ou du même recadrage.
+While dragging or resizing, layers snap to the document edges and centre, and to the edges and
+centres of the other layers. Resizing also snaps to 100 %, contain, cover, width and height.
+Red guides show what caught. Hold `Alt` to suspend it, or toggle the **Snap** button.
 
-### Réglage fin
+### Fitting
 
-Opacité, échelle, X et Y disposent chacun d'un curseur, d'un champ de saisie directe et de pas fins.
-X et Y se règlent au pixel avec `+1` / `-1`, par dix avec `+10` / `-10`, et aux flèches du clavier.
+Per layer and for the whole stack: `Contain`, `Cover`, `Width`, `Height`, `1:1`, `Center`.
+Useful when the frames do not all come from the same body or the same crop.
 
-## Raccourcis
+### Fine control
 
-| Touche | Action |
+Opacity, scale, X and Y each have a slider, a direct input field and fine steps. X and Y move one
+pixel at a time with `+1` / `-1`, ten with `+10` / `-10`, and with the arrow keys.
+
+## Languages
+
+English by default, French available. The `EN` / `FR` buttons in the header switch instantly and the
+choice is remembered. All strings live in a single `I18N` table, so adding a language means adding
+one entry.
+
+## Shortcuts
+
+| Key | Action |
 | --- | --- |
-| `V` | Déplacer |
-| `E` | Gomme |
-| `R` | Restaurer |
-| `[` `]` | Taille de brosse |
-| Flèches | Déplacer le calque de 1 px (10 px avec `Maj`) |
-| `F` | Ajuster la vue |
-| `Échap` | Fermer le panneau des calques |
-| `Ctrl` + `Z` | Annuler |
-| `Ctrl` + `Maj` + `Z` | Rétablir |
-| Molette | Zoom |
-| Espace ou clic droit | Déplacer la vue |
+| `V` | Move |
+| `E` | Erase |
+| `R` | Restore |
+| `S` | Toggle snapping |
+| `Alt` (held) | Suspend snapping |
+| `[` `]` | Brush size |
+| Arrows | Move layer by 1 px (10 px with `Shift`) |
+| `F` | Fit view |
+| `Esc` | Close the layer panel |
+| `Ctrl` + `Z` | Undo |
+| `Ctrl` + `Shift` + `Z` | Redo |
+| Wheel | Zoom |
+| Space or right click | Pan |
 
-## Mobile et tablette
+## Phone and tablet
 
-L'interface s'adapte au tactile : cibles élargies, panneau des calques escamotable, poignées de
-redimensionnement agrandies, marges gérées autour des encoches.
+The interface adapts to touch: larger targets, collapsible layer panel, bigger resize handles, and
+margins that respect display cutouts.
 
-- Un doigt : outil actif.
-- Deux doigts : zoom et déplacement de la vue.
-- Le panneau des calques se referme d'un appui hors de sa zone.
+- One finger: active tool.
+- Two fingers: zoom and pan.
+- Tapping outside the layer panel closes it.
 
-Sur iOS, `Partager → Sur l'écran d'accueil` installe l'application en plein écran. À l'export, le PNG
-s'ouvre dans un onglet : `Partager → Enregistrer dans Photos`.
+On iOS, `Share → Add to Home Screen` installs it fullscreen. On export the PNG opens in a tab:
+`Share → Save to Photos`.
 
-## Formats et limites
+## Formats and limits
 
-Les formats lus sont ceux du navigateur : JPEG, PNG, WebP, AVIF, TIFF, GIF, BMP.
+Supported formats are whatever the browser decodes: JPEG, PNG, WebP, AVIF, TIFF, GIF, BMP.
 
-**HEIC** n'est décodable par aucun navigateur de bureau. Si tes photos viennent d'un iPhone, règle
-`Réglages → Appareil photo → Formats → Plus compatible`, ou convertis-les en JPEG. L'application
-détecte le cas et le signale.
+**HEIC** is not decodable by any desktop browser. If your photos come from an iPhone, set
+`Settings → Camera → Formats → Most Compatible`, or convert them to JPEG. The app detects the case
+and says so.
 
-La résolution de travail est plafonnée pour tenir dans la mémoire canvas, très limitée sur iOS. Le
-réglage **Travail** va de 2048 px à la pleine résolution et s'applique aux imports suivants. Si
-l'export échoue faute de mémoire, baisse ce réglage.
+Working resolution is capped to fit in canvas memory, which is tight on iOS. The **Working** setting
+runs from 2048 px to full resolution and applies to subsequent imports. If export fails for lack of
+memory, lower it.
 
-## Installation locale
+## Running locally
 
-Aucune dépendance, aucune étape de build. Télécharge `index.html` et ouvre-le. Le fichier est
-autonome, icônes comprises, et fonctionne hors ligne.
+No dependencies, no build step. Download `index.html` and open it. The file is self contained,
+icons included, and works offline.
 
-## Limites connues
-
-Les chaînes de l'interface sont en français, écrites en dur. Le passage à une base multilingue reste
-à faire.
-
-## Licence
+## License
 
 MIT.
