@@ -12,6 +12,10 @@
   <a href="https://infinition.github.io/stormstack/"><b>Open the app</b></a>
 </p>
 
+<p align="center">
+  <img src="screenshot.jpg" width="880" alt="Stormstack on an iPad: three storm frames stacked, layer panel open on the left">
+</p>
+
 ---
 
 ## What it does
@@ -58,6 +62,26 @@ in IndexedDB. From then on it keeps itself up to date as you work, and reopens o
 time you come back. **New** starts a fresh one, **Open** lists what you have saved.
 
 Nothing is saved before you name and save it once, so an experiment never leaves a trace behind.
+
+### Project files
+
+**Save to disk** writes the whole project, layers, masks, transforms and all, to a single `.storm`
+file you can back up, move between machines or keep alongside the source photos.
+**Open from disk** loads one back, and dropping a `.storm` on the window does the same.
+
+The format is a plain container, not an archive format you need a tool for:
+
+```
+0  .. 7    "STORMSTK"
+8  .. 11   uint32 LE   format version
+12 .. 15   uint32 LE   manifest length in bytes
+16 ..      manifest, UTF-8 JSON
+then       the images back to back, located by offset and length in the manifest
+```
+
+Layer sources are WebP, masks are PNG, both stored raw rather than base64, which would have added a
+third to every file. A project loaded from disk starts unsaved: press **Save** if you also want it
+in the browser.
 
 ### Compare
 
@@ -143,8 +167,11 @@ memory, lower it.
 
 ## Storage
 
-Projects live in your browser, never on a server. Clearing site data removes them. Export the PNG
-for anything you want to keep.
+Projects live in your browser, never on a server, and clearing site data removes them. Use **Save to
+disk** for anything you want to keep, or export the image.
+
+The app makes no network requests at all: no CDN, no fonts, no analytics, no service worker. It is a
+static page, which is why it runs unchanged on GitHub Pages, from a local file, or offline.
 
 ## Running locally
 

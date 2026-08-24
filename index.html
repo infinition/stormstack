@@ -187,6 +187,7 @@ aside{overscroll-behavior:contain}
        border-radius:3px;padding:0 7px;font-size:11px;color:var(--txt)}
 .pname:focus{border-color:var(--bolt);outline:none}
 .prow{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:6px 0 2px}
+.prow.two{grid-template-columns:repeat(2,1fr)}
 .prow button{padding:6px 4px;font-size:10px;letter-spacing:0}
 .saved{color:var(--dim);font-size:10px;margin-top:4px;min-height:13px}
 
@@ -251,6 +252,10 @@ body.solo #app{grid-template-columns:1fr}
         <button id="pNew" data-i18n="ui.newProject" data-i18n-title="ui.newProjectTitle">New</button>
         <button id="pSave" data-i18n="ui.saveProject" data-i18n-title="ui.saveProjectTitle">Save</button>
         <button id="pOpen" data-i18n="ui.openProject" data-i18n-title="ui.openProjectTitle">Open</button>
+      </div>
+      <div class="prow two">
+        <button id="pFileSave" data-i18n="ui.exportFile" data-i18n-title="ui.exportFileTitle">Save to disk</button>
+        <button id="pFileLoad" data-i18n="ui.importFile" data-i18n-title="ui.importFileTitle">Open from disk</button>
       </div>
       <div id="pSaved" class="saved"></div>
     </div>
@@ -354,6 +359,7 @@ body.solo #app{grid-template-columns:1fr}
 </div>
 
 <input type="file" id="file" accept="image/*,.heic,.heif" multiple hidden>
+<input type="file" id="pfile" accept=".storm" hidden>
 
 <script>
 'use strict';
@@ -442,6 +448,14 @@ const I18N={
   'ui.untitled':'Untitled','ui.noProjects':'No saved project yet.',
   'ui.savedAt':'Saved {t}','ui.autosaved':'Autosaved {t}','ui.neverSaved':'Not saved yet',
   'ui.deleteProject':'Delete this project',
+  'ui.exportFile':'Save to disk','ui.importFile':'Open from disk',
+  'ui.exportFileTitle':'Write the whole project to a .storm file you can back up or move',
+  'ui.importFileTitle':'Load a .storm project file',
+  'msg.fileSaved':'Project written to <b>{name}</b>',
+  'msg.fileLoaded':'Project <b>{name}</b> loaded from disk',
+  'msg.badFile':'This is not a readable .storm file.',
+  'msg.badVersion':'This .storm file was written by a newer version ({v}).',
+  'msg.reading':'Reading\u2026',
   'msg.projectSaved':'Project <b>{name}</b> saved','msg.projectOpened':'Project <b>{name}</b> opened',
   'msg.projectDeleted':'Project <b>{name}</b> deleted',
   'msg.saveFailed':'Save failed: {e}','msg.nothingToSave':'Nothing to save yet.',
@@ -513,6 +527,14 @@ const I18N={
   'ui.untitled':'Sans titre','ui.noProjects':'Aucun projet enregistr\u00e9.',
   'ui.savedAt':'Enregistr\u00e9 {t}','ui.autosaved':'Sauvegarde auto {t}','ui.neverSaved':'Pas encore enregistr\u00e9',
   'ui.deleteProject':'Supprimer ce projet',
+  'ui.exportFile':'Vers le disque','ui.importFile':'Depuis le disque',
+  'ui.exportFileTitle':'\u00c9crit le projet entier dans un fichier .storm, \u00e0 archiver ou \u00e0 d\u00e9placer',
+  'ui.importFileTitle':'Charge un fichier de projet .storm',
+  'msg.fileSaved':'Projet \u00e9crit dans <b>{name}</b>',
+  'msg.fileLoaded':'Projet <b>{name}</b> charg\u00e9 depuis le disque',
+  'msg.badFile':'Ce fichier .storm est illisible.',
+  'msg.badVersion':'Ce fichier .storm vient d\u2019une version plus r\u00e9cente ({v}).',
+  'msg.reading':'Lecture\u2026',
   'msg.projectSaved':'Projet <b>{name}</b> enregistr\u00e9','msg.projectOpened':'Projet <b>{name}</b> ouvert',
   'msg.projectDeleted':'Projet <b>{name}</b> supprim\u00e9',
   'msg.saveFailed':'\u00c9chec de l\u2019enregistrement : {e}','msg.nothingToSave':'Rien \u00e0 enregistrer pour l\u2019instant.',
@@ -652,8 +674,12 @@ addEventListener('drop',e=>{
 });
 
 const IMG_EXT=/\.(jpe?g|png|webp|heic|heif|tiff?|avif|gif|bmp|jfif|pjpeg)$/i;
+const STORM_EXT=/\.storm$/i;
 async function addFiles(files){
   const all=files.filter(Boolean);
+  // Un fichier de projet lache sur la fenetre s'ouvre au lieu de s'importer.
+  const proj=all.find(f=>STORM_EXT.test(f.name));
+  if(proj){loadProjectFile(proj);return;}
   const keep=all.filter(f=>(f.type||'').startsWith('image/')||IMG_EXT.test(f.name));
   const skipped=all.filter(f=>keep.indexOf(f)<0).map(f=>f.name||'(sans nom)');
   if(!keep.length){
@@ -1551,10 +1577,9 @@ function blobToCanvas(blob,w,h){
     img.src=url;
   });
 }
-async function openProject(key){
-  clearTimeout(autoT);
-  const rec=await dbGet(key);
-  if(!rec)return;
+// Reconstruit l'etat depuis un enregistrement, quelle qu'en soit la source :
+// base du navigateur ou fichier .storm.
+async function applyProjectRecord(rec){
   S.layers=[];S.sel=null;HIST.undo.length=0;HIST.redo.length=0;
   S.doc.w=rec.doc.w;S.doc.h=rec.doc.h;resizeDoc();
   S.bg=rec.bg||'black';$('bg').value=S.bg;
@@ -1570,13 +1595,98 @@ async function openProject(key){
       thumb:makeThumb(src,r.sw,r.sh)});
   }
   S.sel=S.layers.length?S.layers[S.layers.length-1].id:null;
+  $('pname').value=rec.name||'';
+  buildList();fitView();histUI();S.dirty=true;
+}
+async function openProject(key){
+  clearTimeout(autoT);
+  const rec=await dbGet(key);
+  if(!rec)return;
+  await applyProjectRecord(rec);
   curKey=key;
-  $('pname').value=rec.name;
   $('pSaved').textContent=t('ui.savedAt',{t:fmtDate(rec.savedAt)});
   try{localStorage.setItem(CUR_KEY,key);}catch(e){}
-  buildList();fitView();histUI();S.dirty=true;
   say(t('msg.projectOpened',{name:esc(rec.name)}),2500);
 }
+
+/* ---------------- fichier de projet .storm ----------------
+   Conteneur binaire plutot qu'un JSON en base64, qui gonflerait d'un tiers.
+
+     0  ..  7   "STORMSTK"
+     8  .. 11   uint32 LE  version du format
+    12  .. 15   uint32 LE  longueur du manifeste, en octets
+    16  ..      manifeste JSON en UTF-8
+    puis        les images brutes, bout a bout, reperees par
+                offset et longueur dans le manifeste.                     */
+const STORM_MAGIC='STORMSTK',STORM_VER=1;
+async function projectToBlob(){
+  const stack=S.layers.slice();
+  const parts=[],layers=[];
+  let off=0;
+  const add=blob=>{const e={off,len:blob.size,type:blob.type};parts.push(blob);off+=blob.size;return e;};
+  for(const L of stack){
+    let src=await toBlob(L.src,'image/webp',.92);
+    if(!src)src=await toBlob(L.src,'image/png');
+    const mask=await toBlob(L.mask,'image/png');
+    layers.push({name:L.name,x:L.x,y:L.y,scale:L.scale,opacity:L.opacity,blend:L.blend,
+      visible:L.visible,locked:!!L.locked,thr:L.thr||0,sw:L.sw,sh:L.sh,orig:L.orig||null,
+      mw:L.mask.width,mh:L.mask.height,src:add(src),mask:add(mask)});
+  }
+  const manifest={app:'stormstack',version:STORM_VER,name:projectName(),
+    doc:{w:S.doc.w,h:S.doc.h},bg:S.bg,cap:S.cap,savedAt:Date.now(),layers};
+  const mBytes=new TextEncoder().encode(JSON.stringify(manifest));
+  const head=new ArrayBuffer(16),hv=new DataView(head);
+  for(let i=0;i<8;i++)hv.setUint8(i,STORM_MAGIC.charCodeAt(i));
+  hv.setUint32(8,STORM_VER,true);
+  hv.setUint32(12,mBytes.length,true);
+  return new Blob([head,mBytes,...parts],{type:'application/octet-stream'});
+}
+async function saveProjectFile(){
+  if(!S.layers.length){say(t('msg.nothingToSave'),3000);return;}
+  say(t('msg.saving'),120000);
+  try{
+    const blob=await projectToBlob();
+    const base=(projectName().replace(/[^\w-]+/g,'_'))||'stormstack';
+    const name=base+'.storm';
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),8000);
+    say(t('msg.fileSaved',{name:esc(name)}),4000);
+  }catch(e){
+    console.error(e);
+    say(t('msg.saveFailed',{e:esc(String(e&&e.message||e))}),8000);
+  }
+}
+async function loadProjectFile(file){
+  clearTimeout(autoT);
+  say(t('msg.reading'),120000);
+  try{
+    const head=new DataView(await file.slice(0,16).arrayBuffer());
+    let magic='';for(let i=0;i<8;i++)magic+=String.fromCharCode(head.getUint8(i));
+    if(magic!==STORM_MAGIC){say(t('msg.badFile'),8000);return;}
+    const ver=head.getUint32(8,true),mLen=head.getUint32(12,true);
+    if(ver>STORM_VER){say(t('msg.badVersion',{v:ver}),8000);return;}
+    const manifest=JSON.parse(new TextDecoder().decode(await file.slice(16,16+mLen).arrayBuffer()));
+    const base=16+mLen;
+    const cut=e=>e?file.slice(base+e.off,base+e.off+e.len,e.type||'application/octet-stream'):null;
+    const rec={name:manifest.name,doc:manifest.doc,bg:manifest.bg,cap:manifest.cap,
+      layers:manifest.layers.map(l=>Object.assign({},l,{src:cut(l.src),mask:cut(l.mask)}))};
+    await applyProjectRecord(rec);
+    // Charge depuis le disque, le projet n'est pas encore dans le navigateur :
+    // c'est a l'utilisateur d'appuyer sur Enregistrer s'il le veut.
+    curKey=null;
+    try{localStorage.removeItem(CUR_KEY);}catch(e){}
+    $('pSaved').textContent=t('ui.neverSaved');
+    say(t('msg.fileLoaded',{name:esc(rec.name||file.name)}),3500);
+  }catch(e){
+    console.error(e);
+    say(t('msg.badFile'),8000);
+  }
+}
+$('pFileSave').onclick=saveProjectFile;
+$('pFileLoad').onclick=()=>$('pfile').click();
+$('pfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)loadProjectFile(f);};
 function newProject(){
   if(S.layers.length&&!confirm(t('msg.confirmNew')))return;
   clearTimeout(autoT);
